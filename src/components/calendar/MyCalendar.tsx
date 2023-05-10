@@ -23,7 +23,9 @@ export const nDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 export type Matrix = string[] | number[];
 
 const MyCalendar = () => {
+  /** Used for generating date matrix, changing months/years and highlighting today */
   const [activeDate, setActiveDate] = useState<Date>(new Date());
+  /** Used for selecting dates in calendar */
   const [selcetedDate, setSelectedDate] = useState<Date>(new Date());
   const [today] = useState<Date>(new Date());
 
@@ -102,8 +104,8 @@ const MyCalendar = () => {
   };
 
   const renderRows = () => {
-    let rows = [];
-    const matrix = generateMatrix();
+    let rows: JSX.Element[] = [];
+    const matrix: Matrix[] = generateMatrix();
 
     rows = matrix.map((row: string[] | number[], rowIndex: number) => {
       const rowItems = row.map((item: string | number, colIndex: number) => {
@@ -111,25 +113,23 @@ const MyCalendar = () => {
         const textColor = {color: textColorToday(Number(item), colIndex)};
         // Highlight current date
         const opacityBackgroundColor = {
-          backgroundColor: Number(item) === activeDate.getDate() ? '#ddd' : '',
+          backgroundColor:
+            Number(item) === selcetedDate.getDate() &&
+            activeDate.getMonth() === selcetedDate.getMonth() &&
+            activeDate.getFullYear() === selcetedDate.getFullYear()
+              ? '#ddd'
+              : '',
         };
 
         return (
           <TouchableOpacity
             key={
-              String(colIndex) + String(Number(item) === activeDate.getDate())
+              String(colIndex) + String(Number(item) === selcetedDate.getDate())
             }
             style={[styles.dateOpacity, opacityBackgroundColor]}
             disabled={Number(item) ? false : true}
             onPress={() => {
               if (Number(item) && Number(item) > -1) {
-                setActiveDate(
-                  new Date(
-                    activeDate.getFullYear(),
-                    activeDate.getMonth(),
-                    Number(item),
-                  ),
-                );
                 setSelectedDate(
                   new Date(
                     activeDate.getFullYear(),
