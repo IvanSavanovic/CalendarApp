@@ -178,7 +178,6 @@ const MyCalendar = () => {
 
   return (
     <View style={styles.main}>
-      <AddEventModal open={openAddEvent} setOpen={setOpenAddEvent} />
       <View style={styles.headerView}>
         <TouchableOpacity onPress={() => onButtonClick(false)}>
           <Text style={styles.buttonHeaderMonthText}>{'<'}</Text>
@@ -193,6 +192,7 @@ const MyCalendar = () => {
       </View>
       {renderRows()}
       {renderAddEventButton()}
+      <AddEventModal open={openAddEvent} setOpen={setOpenAddEvent} />
     </View>
   );
 };
@@ -251,6 +251,6 @@ const styles = StyleSheet.create({
   },
   addEventButtonText: {
     color: '#ffffff',
-    fontSize: 36,
+    fontSize: 32,
   },
 });
