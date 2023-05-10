@@ -23,7 +23,7 @@ export const nDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 export type Matrix = string[] | number[];
 
 const MyCalendar = () => {
-  /** Used for generating date matrix, changing months/years and highlighting today */
+  /** Used for generating date matrix, changing months/years */
   const [activeDate, setActiveDate] = useState<Date>(new Date());
   /** Used for selecting dates in calendar */
   const [selcetedDate, setSelectedDate] = useState<Date>(new Date());
