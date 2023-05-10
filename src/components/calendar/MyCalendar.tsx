@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import AddEventModal from './Modal/AddEvent';
+import {Text, useTheme} from 'react-native-paper';
 
 export const months = [
   'January',
@@ -24,6 +25,7 @@ export const nDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 export type Matrix = string[] | number[];
 
 const MyCalendar = () => {
+  const theme = useTheme();
   /** Used for generating date matrix, changing months/years */
   const [activeDate, setActiveDate] = useState<Date>(new Date());
   /** Used for selecting dates in calendar */
@@ -31,18 +33,49 @@ const MyCalendar = () => {
   const [today] = useState<Date>(new Date());
   const [openAddEvent, setOpenAddEvent] = useState<boolean>(false);
 
-  const textColorToday = (item: number, colIndex: number) => {
+  const textColorForCalendarDates = (item: number, colIndex: number) => {
+    /** Highlight today in calendar */
     if (
       today.getDate() === item &&
       activeDate.getMonth() === today.getMonth() &&
-      activeDate.getFullYear() === today.getFullYear()
+      activeDate.getFullYear() === today.getFullYear() &&
+      today.getDate() !== selcetedDate.getDate()
     ) {
-      return '#5599ff';
+      return theme.colors.secondary;
     }
+    /** Change color of today in calendar when selected */
+    if (
+      today.getDate() === item &&
+      activeDate.getMonth() === today.getMonth() &&
+      activeDate.getFullYear() === today.getFullYear() &&
+      today.getDate() === selcetedDate.getDate()
+    ) {
+      return theme.colors.onSecondary;
+    }
+    /** Change color of all sundays */
     if (colIndex === 0) {
-      return '#a00';
+      return theme.colors.error;
+    }
+    /** Change color of selected date */
+    if (
+      selcetedDate.getDate() === item &&
+      activeDate.getMonth() === selcetedDate.getMonth() &&
+      activeDate.getFullYear() === selcetedDate.getFullYear()
+    ) {
+      return theme.colors.onSecondary;
+    }
+    return theme.colors.onBackground;
+  };
+
+  const highlightSelectedDate = (item: number) => {
+    if (
+      item === selcetedDate.getDate() &&
+      activeDate.getMonth() === selcetedDate.getMonth() &&
+      activeDate.getFullYear() === selcetedDate.getFullYear()
+    ) {
+      return theme.colors.secondary;
     } else {
-      return '#000';
+      return theme.colors.background;
     }
   };
 
@@ -68,6 +101,35 @@ const MyCalendar = () => {
         );
       }
     }
+  };
+
+  const renderHeader = () => {
+    return (
+      <View style={styles.headerView}>
+        <TouchableOpacity onPress={() => onButtonClick(false)}>
+          <Text
+            style={[
+              styles.buttonHeaderMonthText,
+              {color: theme.colors.onBackground},
+            ]}>
+            {'<'}
+          </Text>
+        </TouchableOpacity>
+        <Text style={styles.headerText}>
+          {months[activeDate.getMonth()] + ' '}
+          {activeDate.getFullYear()}
+        </Text>
+        <TouchableOpacity onPress={() => onButtonClick(true)}>
+          <Text
+            style={[
+              styles.buttonHeaderMonthText,
+              {color: theme.colors.onBackground},
+            ]}>
+            {'>'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   const generateMatrix = () => {
@@ -111,16 +173,12 @@ const MyCalendar = () => {
 
     rows = matrix.map((row: string[] | number[], rowIndex: number) => {
       const rowItems = row.map((item: string | number, colIndex: number) => {
-        // Highlight Sundays
-        const textColor = {color: textColorToday(Number(item), colIndex)};
+        const textColor = {
+          color: textColorForCalendarDates(Number(item), colIndex),
+        };
         // Highlight current date
         const opacityBackgroundColor = {
-          backgroundColor:
-            Number(item) === selcetedDate.getDate() &&
-            activeDate.getMonth() === selcetedDate.getMonth() &&
-            activeDate.getFullYear() === selcetedDate.getFullYear()
-              ? '#ddd'
-              : '',
+          backgroundColor: highlightSelectedDate(Number(item)),
         };
 
         return (
@@ -149,7 +207,9 @@ const MyCalendar = () => {
       });
 
       return (
-        <View key={rowIndex} style={styles.dateRow}>
+        <View
+          key={rowIndex}
+          style={[styles.dateRow, {backgroundColor: theme.colors.background}]}>
           {rowItems}
         </View>
       );
@@ -162,12 +222,18 @@ const MyCalendar = () => {
       activeDate.getMonth() === selcetedDate.getMonth() &&
       activeDate.getFullYear() === selcetedDate.getFullYear()
     );
-    const backgroundColor = {backgroundColor: disabled ? '#b1b5ba' : '#5599ff'};
 
     return (
       <View style={styles.addEventView}>
         <TouchableOpacity
-          style={[styles.addEventButton, backgroundColor]}
+          style={[
+            styles.addEventButton,
+            {
+              backgroundColor: disabled
+                ? theme.colors.onSurfaceDisabled
+                : theme.colors.secondary,
+            },
+          ]}
           onPress={() => setOpenAddEvent(true)}
           disabled={disabled}>
           <Text style={styles.addEventButtonText}>+</Text>
@@ -177,19 +243,8 @@ const MyCalendar = () => {
   };
 
   return (
-    <View style={styles.main}>
-      <View style={styles.headerView}>
-        <TouchableOpacity onPress={() => onButtonClick(false)}>
-          <Text style={styles.buttonHeaderMonthText}>{'<'}</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerText}>
-          {months[activeDate.getMonth()] + ' '}
-          {activeDate.getFullYear()}
-        </Text>
-        <TouchableOpacity onPress={() => onButtonClick(true)}>
-          <Text style={styles.buttonHeaderMonthText}>{'>'}</Text>
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.main, {backgroundColor: theme.colors.background}]}>
+      {renderHeader()}
       {renderRows()}
       {renderAddEventButton()}
       <AddEventModal open={openAddEvent} setOpen={setOpenAddEvent} />
@@ -228,6 +283,7 @@ const styles = StyleSheet.create({
   textColumn: {
     textAlign: 'center',
     fontSize: 16,
+    fontWeight: '700',
   },
   dateRow: {
     flex: 1,
