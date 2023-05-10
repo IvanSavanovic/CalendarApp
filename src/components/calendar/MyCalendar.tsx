@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import AddEventModal from './Modal/AddEvent';
 
 export const months = [
   'January',
@@ -28,6 +29,7 @@ const MyCalendar = () => {
   /** Used for selecting dates in calendar */
   const [selcetedDate, setSelectedDate] = useState<Date>(new Date());
   const [today] = useState<Date>(new Date());
+  const [openAddEvent, setOpenAddEvent] = useState<boolean>(false);
 
   const textColorToday = (item: number, colIndex: number) => {
     if (
@@ -155,21 +157,42 @@ const MyCalendar = () => {
     return rows;
   };
 
+  const renderAddEventButton = () => {
+    const disabled = !(
+      activeDate.getMonth() === selcetedDate.getMonth() &&
+      activeDate.getFullYear() === selcetedDate.getFullYear()
+    );
+    const backgroundColor = {backgroundColor: disabled ? '#b1b5ba' : '#5599ff'};
+
+    return (
+      <View style={styles.addEventView}>
+        <TouchableOpacity
+          style={[styles.addEventButton, backgroundColor]}
+          onPress={() => setOpenAddEvent(true)}
+          disabled={disabled}>
+          <Text style={styles.addEventButtonText}>+</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.main}>
+      <AddEventModal open={openAddEvent} setOpen={setOpenAddEvent} />
       <View style={styles.headerView}>
         <TouchableOpacity onPress={() => onButtonClick(false)}>
-          <Text style={styles.buttonHeaderText}>{'<'}</Text>
+          <Text style={styles.buttonHeaderMonthText}>{'<'}</Text>
         </TouchableOpacity>
         <Text style={styles.headerText}>
           {months[activeDate.getMonth()] + ' '}
           {activeDate.getFullYear()}
         </Text>
         <TouchableOpacity onPress={() => onButtonClick(true)}>
-          <Text style={styles.buttonHeaderText}>{'>'}</Text>
+          <Text style={styles.buttonHeaderMonthText}>{'>'}</Text>
         </TouchableOpacity>
       </View>
       {renderRows()}
+      {renderAddEventButton()}
     </View>
   );
 };
@@ -194,7 +217,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
   },
-  buttonHeaderText: {fontWeight: '900', fontSize: 20, textAlign: 'center'},
+  buttonHeaderMonthText: {fontWeight: '900', fontSize: 20, textAlign: 'center'},
   dateOpacity: {
     width: 50,
     height: 50,
@@ -212,5 +235,22 @@ const styles = StyleSheet.create({
     paddingTop: 30,
     paddingBottom: 30,
     alignItems: 'center',
+  },
+  addEventView: {
+    position: 'absolute',
+    top: 385,
+    right: 30,
+  },
+  addEventButton: {
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    borderRadius: 100,
+  },
+  addEventButtonText: {
+    color: '#ffffff',
+    fontSize: 36,
   },
 });
