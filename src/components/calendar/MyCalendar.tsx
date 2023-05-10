@@ -33,18 +33,9 @@ interface MyCalendarProps {
   selcetedDate: Date;
   /** Set selected date */
   setSelectedDate: React.Dispatch<React.SetStateAction<Date>>;
-  /** Open/close AddEvent modal */
-  openAddEvent: boolean;
-  /** Set open/close AddEvent modal */
-  setOpenAddEvent: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const MyCalendar = ({
-  selcetedDate,
-  //openAddEvent,
-  //setOpenAddEvent,
-  setSelectedDate,
-}: MyCalendarProps) => {
+const MyCalendar = ({selcetedDate, setSelectedDate}: MyCalendarProps) => {
   const theme = useTheme();
   /** Used for generating date matrix, changing months/years */
   const [activeDate, setActiveDate] = useState<Date>(new Date());

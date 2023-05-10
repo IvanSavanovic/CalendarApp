@@ -43,8 +43,6 @@ const Home = () => {
         setActiveDate={setActiveDate}
         selcetedDate={selcetedDate}
         setSelectedDate={setSelectedDate}
-        openAddEvent={openAddEvent}
-        setOpenAddEvent={setOpenAddEvent}
       />
       {renderAddEventButton()}
       <AddEventModal open={openAddEvent} setOpen={setOpenAddEvent} />

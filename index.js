@@ -8,8 +8,8 @@ import {useColorScheme} from 'react-native';
 
 import App from './src/App';
 import {name as appName} from './app.json';
-import darkTheme from './src/components/theme/darkTheme';
-import lightTheme from './src/components/theme/lightTheme';
+import darkTheme from './src/assets/theme/darkTheme';
+import lightTheme from './src/assets/theme/lightTheme';
 
 export default function Main() {
   const isDarkMode = useColorScheme() === 'dark';
