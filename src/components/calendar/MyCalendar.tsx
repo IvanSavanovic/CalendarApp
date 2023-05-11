@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
-import AddEventModal from './Modal/AddEvent';
 import {Text, useTheme} from 'react-native-paper';
 
 export const months = [
@@ -24,14 +23,23 @@ export const nDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 export type Matrix = string[] | number[];
 
-const MyCalendar = () => {
+interface MyCalendarProps {
+  /** Active date should be just new Date() initialy -
+   *  is used for generating date matrix changing months/years*/
+  activeDate: Date;
+  /** Set active date */
+  setActiveDate: React.Dispatch<React.SetStateAction<Date>>;
+  /** Selected date */
+  selcetedDate: Date;
+  /** Set selected date */
+  setSelectedDate: React.Dispatch<React.SetStateAction<Date>>;
+}
+
+const MyCalendar = ({selcetedDate, setSelectedDate}: MyCalendarProps) => {
   const theme = useTheme();
   /** Used for generating date matrix, changing months/years */
   const [activeDate, setActiveDate] = useState<Date>(new Date());
-  /** Used for selecting dates in calendar */
-  const [selcetedDate, setSelectedDate] = useState<Date>(new Date());
   const [today] = useState<Date>(new Date());
-  const [openAddEvent, setOpenAddEvent] = useState<boolean>(false);
 
   const textColorForCalendarDates = (item: number, colIndex: number) => {
     /** Highlight today in calendar */
@@ -217,37 +225,10 @@ const MyCalendar = () => {
     return rows;
   };
 
-  const renderAddEventButton = () => {
-    const disabled = !(
-      activeDate.getMonth() === selcetedDate.getMonth() &&
-      activeDate.getFullYear() === selcetedDate.getFullYear()
-    );
-
-    return (
-      <View style={styles.addEventView}>
-        <TouchableOpacity
-          style={[
-            styles.addEventButton,
-            {
-              backgroundColor: disabled
-                ? theme.colors.onSurfaceDisabled
-                : theme.colors.secondary,
-            },
-          ]}
-          onPress={() => setOpenAddEvent(true)}
-          disabled={disabled}>
-          <Text style={styles.addEventButtonText}>+</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
   return (
     <View style={[styles.main, {backgroundColor: theme.colors.background}]}>
       {renderHeader()}
       {renderRows()}
-      {renderAddEventButton()}
-      <AddEventModal open={openAddEvent} setOpen={setOpenAddEvent} />
     </View>
   );
 };
@@ -291,22 +272,5 @@ const styles = StyleSheet.create({
     paddingTop: 30,
     paddingBottom: 30,
     alignItems: 'center',
-  },
-  addEventView: {
-    position: 'absolute',
-    top: 385,
-    right: 30,
-  },
-  addEventButton: {
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    textAlign: 'center',
-    borderRadius: 100,
-  },
-  addEventButtonText: {
-    color: '#ffffff',
-    fontSize: 32,
   },
 });
