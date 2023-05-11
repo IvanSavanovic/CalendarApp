@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   },
   addEventView: {
     position: 'absolute',
-    top: 485,
+    top: 540,
     right: 30,
   },
   addEventButton: {
