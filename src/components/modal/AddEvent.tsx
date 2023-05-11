@@ -1,14 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import Modal from 'react-native-modal';
-import {useTheme, TextInput, Button} from 'react-native-paper';
+import {useTheme, TextInput, Button, Text} from 'react-native-paper';
 import VectorImage from 'react-native-vector-image';
 import MyCalendar from '../calendar/MyCalendar';
 
 interface AddEventModalProps {
   /** Open/close modal */
   open: boolean;
-  /** Set open/close */
+  /** Set open/close modal */
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -16,16 +16,17 @@ const AddEventModal = ({open, setOpen}: AddEventModalProps) => {
   const theme = useTheme();
   const [eventName, setEventName] = useState<string>('');
   const [location, setLocation] = useState<string>('');
+  const [eventDescription, setEventDescription] = useState<string>('');
+  //START DATE CALENDAR
   const [startEvent, setStartEvent] = useState<string>('');
   const [openStartEventCal, setOpenStartEventCal] = useState<boolean>(false);
   const [startEventChange, setStartEventChange] = useState<boolean>(false);
+  const [activeDateStart, setActiveDateStart] = useState<Date>(new Date());
+  const [selcetedDateStart, setSelectedDateStart] = useState<Date>(new Date());
+  //END DATE CALENDAR
   const [endEvent, setEndEvent] = useState<string>('');
   const [openEndEventCal, setOpenEndEventCal] = useState<boolean>(false);
   const [endEventChange, setEndEventChange] = useState<boolean>(false);
-  const [eventDescription, setEventDescription] = useState<string>('');
-
-  const [activeDateStart, setActiveDateStart] = useState<Date>(new Date());
-  const [selcetedDateStart, setSelectedDateStart] = useState<Date>(new Date());
   const [activeDateEnd, setActiveDateEnd] = useState<Date>(new Date());
   const [selcetedDateEnd, setSelectedDateEnd] = useState<Date>(new Date());
 
@@ -53,6 +54,7 @@ const AddEventModal = ({open, setOpen}: AddEventModalProps) => {
         .replace('/', '.')
         .replace(',', '');
       setStartEvent(startDateTmp);
+      setStartEventChange(false);
     }
   }, [selcetedDateStart, startEventChange]);
 
@@ -64,6 +66,7 @@ const AddEventModal = ({open, setOpen}: AddEventModalProps) => {
         .replace('/', '.')
         .replace(',', '');
       setEndEvent(endDateTmp);
+      setEndEventChange(false);
     }
   }, [endEventChange, selcetedDateEnd]);
 
@@ -79,9 +82,10 @@ const AddEventModal = ({open, setOpen}: AddEventModalProps) => {
         setStartEventChange(false);
         setOpenStartEventCal(false);
       }
-
-      setEndEventChange(false);
-      setOpenEndEventCal(false);
+      if (openEndEventCal) {
+        setEndEventChange(false);
+        setOpenEndEventCal(false);
+      }
     };
 
     return (
@@ -90,6 +94,15 @@ const AddEventModal = ({open, setOpen}: AddEventModalProps) => {
           isVisible={openStartEventCal || openEndEventCal}
           onBackdropPress={closeModal}
           onBackButtonPress={closeModal}>
+          <View
+            style={[
+              styles.calModalHeader,
+              {backgroundColor: theme.colors.background},
+            ]}>
+            <Text style={styles.calModalHeaderText}>
+              {openStartEventCal ? 'Select start day' : 'Select end day'}
+            </Text>
+          </View>
           <MyCalendar
             activeDate={(openStartEventCal && activeDateStart) || activeDateEnd}
             setActiveDate={
@@ -102,7 +115,11 @@ const AddEventModal = ({open, setOpen}: AddEventModalProps) => {
               (openStartEventCal && setSelectedDateStart) || setSelectedDateEnd
             }
           />
-          <View style={{backgroundColor: theme.colors.background}}>
+          <View
+            style={[
+              styles.calModalButtons,
+              {backgroundColor: theme.colors.background},
+            ]}>
             <Button
               mode="text"
               onPress={() => {
@@ -110,8 +127,10 @@ const AddEventModal = ({open, setOpen}: AddEventModalProps) => {
                   setStartEventChange(true);
                   setOpenStartEventCal(false);
                 }
-                setEndEventChange(true);
-                setOpenEndEventCal(false);
+                if (openEndEventCal) {
+                  setEndEventChange(true);
+                  setOpenEndEventCal(false);
+                }
               }}>
               OK
             </Button>
@@ -147,7 +166,7 @@ const AddEventModal = ({open, setOpen}: AddEventModalProps) => {
           />
           <TextInput
             style={styles.textInput}
-            label={'Start'}
+            label={'Start: dd.mm.yyyy'}
             onChangeText={setStartEvent}
             value={startEvent}
             right={
@@ -159,7 +178,7 @@ const AddEventModal = ({open, setOpen}: AddEventModalProps) => {
           />
           <TextInput
             style={styles.textInput}
-            label={'End'}
+            label={'End: dd.mm.yyyy'}
             onChangeText={setEndEvent}
             value={endEvent}
             right={
@@ -175,6 +194,20 @@ const AddEventModal = ({open, setOpen}: AddEventModalProps) => {
             onChangeText={setEventDescription}
             value={eventDescription}
           />
+          <View style={styles.buttonView}>
+            <Button
+              style={styles.buttons}
+              mode="contained"
+              onPress={() => setOpen(false)}>
+              CANCEL
+            </Button>
+            <Button
+              style={styles.buttons}
+              mode="contained"
+              onPress={() => setOpen(false)}>
+              OK
+            </Button>
+          </View>
         </View>
       </Modal>
       {renderCalendarModal()}
@@ -188,5 +221,25 @@ const styles = StyleSheet.create({
   main: {alignItems: 'center', padding: 40, gap: 20},
   textInput: {
     width: '100%',
+  },
+  buttonView: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    gap: 30,
+  },
+  buttons: {
+    width: 120,
+  },
+  calModalButtons: {
+    paddingBottom: 10,
+  },
+  calModalHeader: {
+    paddingTop: 10,
+    paddingBottom: 10,
+    alignItems: 'center',
+  },
+  calModalHeaderText: {
+    fontSize: 18,
+    fontWeight: '600',
   },
 });
