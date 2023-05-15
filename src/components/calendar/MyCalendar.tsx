@@ -23,9 +23,24 @@ export const nDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 export type Matrix = string[] | number[];
 
+export interface CalendarEvent {
+  /** Name of event */
+  eventName: string;
+  /** Loacation of event */
+  location: string;
+  /** Start date of event */
+  eventStartDate: string;
+  /** End date of event */
+  eventEndDate: string;
+  /** Event description */
+  eventDescription: string;
+}
+
 interface MyCalendarProps {
-  /** Active date should be just new Date() initialy -
-   *  is used for generating date matrix changing months/years*/
+  /** Active date should be just new Date() -
+   *  is used for generating date matrix changing months/years
+   *  and checking if event button is disabled
+   * */
   activeDate: Date;
   /** Set active date */
   setActiveDate: React.Dispatch<React.SetStateAction<Date>>;
@@ -33,12 +48,21 @@ interface MyCalendarProps {
   selcetedDate: Date;
   /** Set selected date */
   setSelectedDate: React.Dispatch<React.SetStateAction<Date>>;
+  /** Calendar events */
+  calendarEvent?: CalendarEvent[];
+  /** Colors of events */
+  colors?: string[];
 }
 
-const MyCalendar = ({selcetedDate, setSelectedDate}: MyCalendarProps) => {
+const MyCalendar = ({
+  activeDate,
+  setActiveDate,
+  selcetedDate,
+  setSelectedDate,
+  calendarEvent,
+  colors,
+}: MyCalendarProps) => {
   const theme = useTheme();
-  /** Used for generating date matrix, changing months/years */
-  const [activeDate, setActiveDate] = useState<Date>(new Date());
   const [today] = useState<Date>(new Date());
 
   const textColorForCalendarDates = (item: number, colIndex: number) => {
@@ -175,6 +199,50 @@ const MyCalendar = ({selcetedDate, setSelectedDate}: MyCalendarProps) => {
     return matrix;
   };
 
+  const renderEventMark = (item: string | number) => {
+    if (isNaN(Number(item)) || Number(item) === -1) {
+      return <></>;
+    }
+
+    if (calendarEvent && calendarEvent.length > 0) {
+      return calendarEvent.map((val, index) => {
+        const tmpStart = val.eventStartDate.split('.');
+        const startDate = new Date(
+          Number(tmpStart[2]),
+          Number(tmpStart[1]) - 1,
+          Number(tmpStart[0]),
+        );
+
+        const tmpEnd = val.eventEndDate.split('.');
+        const endDate = new Date(
+          Number(tmpEnd[2]),
+          Number(tmpEnd[1]) - 1,
+          Number(tmpEnd[0]),
+        );
+
+        const refDate = new Date(
+          activeDate.getFullYear(),
+          activeDate.getMonth(),
+          Number(item),
+        );
+
+        if (startDate <= refDate && refDate <= endDate) {
+          return (
+            <View
+              key={index}
+              style={[
+                styles.mark,
+                {
+                  backgroundColor: colors && colors[index],
+                },
+              ]}
+            />
+          );
+        }
+      });
+    }
+  };
+
   const renderRows = () => {
     let rows: JSX.Element[] = [];
     const matrix: Matrix[] = generateMatrix();
@@ -190,27 +258,31 @@ const MyCalendar = ({selcetedDate, setSelectedDate}: MyCalendarProps) => {
         };
 
         return (
-          <TouchableOpacity
+          <View
             key={
               String(colIndex) + String(Number(item) === selcetedDate.getDate())
             }
-            style={[styles.dateOpacity, opacityBackgroundColor]}
-            disabled={Number(item) ? false : true}
-            onPress={() => {
-              if (Number(item) && Number(item) > -1) {
-                setSelectedDate(
-                  new Date(
-                    activeDate.getFullYear(),
-                    activeDate.getMonth(),
-                    Number(item),
-                  ),
-                );
-              }
-            }}>
-            <Text style={[styles.textColumn, textColor]}>
-              {item !== -1 ? item : ''}
-            </Text>
-          </TouchableOpacity>
+            style={[styles.dateOpacityView, opacityBackgroundColor]}>
+            <TouchableOpacity
+              style={styles.dateOpacity}
+              disabled={Number(item) ? false : true}
+              onPress={() => {
+                if (Number(item) && Number(item) > -1) {
+                  setSelectedDate(
+                    new Date(
+                      activeDate.getFullYear(),
+                      activeDate.getMonth(),
+                      Number(item),
+                    ),
+                  );
+                }
+              }}>
+              <Text style={[styles.textColumn, textColor]}>
+                {item !== -1 ? item : ''}
+              </Text>
+              {renderEventMark(item)}
+            </TouchableOpacity>
+          </View>
         );
       });
 
@@ -254,12 +326,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   buttonHeaderMonthText: {fontWeight: '900', fontSize: 20, textAlign: 'center'},
-  dateOpacity: {
+  dateOpacityView: {
     width: 50,
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 100,
+  },
+  dateOpacity: {
+    width: '100%',
   },
   textColumn: {
     textAlign: 'center',
@@ -272,5 +347,9 @@ const styles = StyleSheet.create({
     paddingTop: 30,
     paddingBottom: 30,
     alignItems: 'center',
+  },
+  mark: {
+    height: 2.5,
+    width: '100%',
   },
 });

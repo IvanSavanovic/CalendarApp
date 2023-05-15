@@ -1,15 +1,18 @@
 import React, {useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import MyCalendar from '../calendar/MyCalendar';
-import AddEventModal from '../modal/AddEvent';
 import {useTheme} from 'react-native-paper';
+
+import MyCalendar, {CalendarEvent} from '../calendar/MyCalendar';
+import AddEventModal from '../modal/AddEvent';
 
 const Home = () => {
   const theme = useTheme();
   const [activeDate, setActiveDate] = useState<Date>(new Date());
   const [selcetedDate, setSelectedDate] = useState<Date>(new Date());
   const [openAddEvent, setOpenAddEvent] = useState<boolean>(false);
+  const [calendarEvent, setCalendarEvent] = useState<CalendarEvent[]>([]);
+  const colors: string[] = ['purple', 'green', 'red', 'blue'];
 
   const renderAddEventButton = () => {
     const disabled = !(
@@ -43,9 +46,16 @@ const Home = () => {
         setActiveDate={setActiveDate}
         selcetedDate={selcetedDate}
         setSelectedDate={setSelectedDate}
+        calendarEvent={calendarEvent}
+        colors={colors}
       />
       {renderAddEventButton()}
-      <AddEventModal open={openAddEvent} setOpen={setOpenAddEvent} />
+      <AddEventModal
+        open={openAddEvent}
+        setOpen={setOpenAddEvent}
+        calendarEvent={calendarEvent}
+        setCalendarEvent={setCalendarEvent}
+      />
     </SafeAreaView>
   );
 };

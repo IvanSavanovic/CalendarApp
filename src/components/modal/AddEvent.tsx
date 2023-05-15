@@ -3,16 +3,26 @@ import {StyleSheet, View} from 'react-native';
 import Modal from 'react-native-modal';
 import {useTheme, TextInput, Button, Text} from 'react-native-paper';
 import VectorImage from 'react-native-vector-image';
-import MyCalendar from '../calendar/MyCalendar';
+
+import MyCalendar, {CalendarEvent} from '../calendar/MyCalendar';
 
 interface AddEventModalProps {
   /** Open/close modal */
   open: boolean;
   /** Set open/close modal */
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  /** Calendar event */
+  calendarEvent: CalendarEvent[];
+  /** Set calendar event */
+  setCalendarEvent: React.Dispatch<React.SetStateAction<CalendarEvent[]>>;
 }
 
-const AddEventModal = ({open, setOpen}: AddEventModalProps) => {
+const AddEventModal = ({
+  open,
+  setOpen,
+  calendarEvent,
+  setCalendarEvent,
+}: AddEventModalProps) => {
   const theme = useTheme();
   const [eventName, setEventName] = useState<string>('');
   const [location, setLocation] = useState<string>('');
@@ -204,7 +214,19 @@ const AddEventModal = ({open, setOpen}: AddEventModalProps) => {
             <Button
               style={styles.buttons}
               mode="contained"
-              onPress={() => setOpen(false)}>
+              onPress={() => {
+                setCalendarEvent([
+                  ...calendarEvent,
+                  {
+                    eventName: eventName ? eventName : '',
+                    location: location ? location : '',
+                    eventStartDate: startEvent ? startEvent : '',
+                    eventEndDate: endEvent ? endEvent : '',
+                    eventDescription: eventDescription ? eventDescription : '',
+                  },
+                ]);
+                setOpen(false);
+              }}>
               OK
             </Button>
           </View>
