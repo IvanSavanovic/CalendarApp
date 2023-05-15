@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Text, useTheme} from 'react-native-paper';
 
 export const months = [
@@ -243,6 +243,61 @@ const MyCalendar = ({
     }
   };
 
+  const renderEventDescription = () => {
+    if (calendarEvent && calendarEvent.length > 0) {
+      return calendarEvent.map((val, index) => {
+        const tmpStart = val.eventStartDate.split('.');
+        const startDate = new Date(
+          Number(tmpStart[2]),
+          Number(tmpStart[1]) - 1,
+          Number(tmpStart[0]),
+        );
+
+        const tmpEnd = val.eventEndDate.split('.');
+        const endDate = new Date(
+          Number(tmpEnd[2]),
+          Number(tmpEnd[1]) - 1,
+          Number(tmpEnd[0]),
+        );
+
+        if (
+          startDate <= selcetedDate &&
+          selcetedDate <= endDate &&
+          activeDate.getMonth() === selcetedDate.getMonth()
+        ) {
+          return (
+            <View
+              key={index}
+              style={[
+                styles.eventDescription,
+                {backgroundColor: theme.colors.elevation.level1},
+              ]}>
+              {val.eventName && (
+                <Text variant="titleLarge">{val.eventName}</Text>
+              )}
+              {val.location && (
+                <Text variant="bodyMedium">Location: {val.location}</Text>
+              )}
+              {val.eventStartDate && (
+                <Text variant="bodyMedium">Start: {val.eventStartDate}</Text>
+              )}
+              {val.eventEndDate && (
+                <Text variant="bodyMedium">End: {val.eventEndDate}</Text>
+              )}
+              {val.eventDescription && (
+                <Text variant="bodyMedium">
+                  Description: {val.eventDescription}
+                </Text>
+              )}
+            </View>
+          );
+        }
+      });
+    } else {
+      return <></>;
+    }
+  };
+
   const renderRows = () => {
     let rows: JSX.Element[] = [];
     const matrix: Matrix[] = generateMatrix();
@@ -298,10 +353,13 @@ const MyCalendar = ({
   };
 
   return (
-    <View style={[styles.main, {backgroundColor: theme.colors.background}]}>
-      {renderHeader()}
-      {renderRows()}
-    </View>
+    <ScrollView style={{backgroundColor: theme.colors.background}}>
+      <View style={styles.main}>
+        {renderHeader()}
+        {renderRows()}
+        {renderEventDescription()}
+      </View>
+    </ScrollView>
   );
 };
 
@@ -344,12 +402,19 @@ const styles = StyleSheet.create({
   dateRow: {
     flex: 1,
     flexDirection: 'row',
-    paddingTop: 30,
-    paddingBottom: 30,
+    paddingTop: 5,
+    paddingBottom: 5,
     alignItems: 'center',
   },
   mark: {
     height: 2.5,
     width: '100%',
+  },
+  eventDescription: {
+    flex: 1,
+    minWidth: '100%',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    padding: 10,
   },
 });

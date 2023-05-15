@@ -41,14 +41,16 @@ const Home = () => {
 
   return (
     <SafeAreaView style={styles.main}>
-      <MyCalendar
-        activeDate={activeDate}
-        setActiveDate={setActiveDate}
-        selcetedDate={selcetedDate}
-        setSelectedDate={setSelectedDate}
-        calendarEvent={calendarEvent}
-        colors={colors}
-      />
+      <View style={styles.calendarView}>
+        <MyCalendar
+          activeDate={activeDate}
+          setActiveDate={setActiveDate}
+          selcetedDate={selcetedDate}
+          setSelectedDate={setSelectedDate}
+          calendarEvent={calendarEvent}
+          colors={colors}
+        />
+      </View>
       {renderAddEventButton()}
       <AddEventModal
         open={openAddEvent}
@@ -65,12 +67,13 @@ export default Home;
 const styles = StyleSheet.create({
   main: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    //justifyContent: 'center',
+    //alignItems: 'center',
   },
+  calendarView: {padding: 20},
   addEventView: {
     position: 'absolute',
-    top: 540,
+    top: 410,
     right: 30,
   },
   addEventButton: {

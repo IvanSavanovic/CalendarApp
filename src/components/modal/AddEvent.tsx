@@ -113,18 +113,23 @@ const AddEventModal = ({
               {openStartEventCal ? 'Select start day' : 'Select end day'}
             </Text>
           </View>
-          <MyCalendar
-            activeDate={(openStartEventCal && activeDateStart) || activeDateEnd}
-            setActiveDate={
-              (openStartEventCal && setActiveDateStart) || setActiveDateEnd
-            }
-            selcetedDate={
-              (openStartEventCal && selcetedDateStart) || selcetedDateEnd
-            }
-            setSelectedDate={
-              (openStartEventCal && setSelectedDateStart) || setSelectedDateEnd
-            }
-          />
+          <View>
+            <MyCalendar
+              activeDate={
+                (openStartEventCal && activeDateStart) || activeDateEnd
+              }
+              setActiveDate={
+                (openStartEventCal && setActiveDateStart) || setActiveDateEnd
+              }
+              selcetedDate={
+                (openStartEventCal && selcetedDateStart) || selcetedDateEnd
+              }
+              setSelectedDate={
+                (openStartEventCal && setSelectedDateStart) ||
+                setSelectedDateEnd
+              }
+            />
+          </View>
           <View
             style={[
               styles.calModalButtons,
@@ -261,7 +266,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   calModalHeaderText: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '600',
   },
 });
