@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
-import {Text, useTheme} from 'react-native-paper';
+import {Surface, Text, useTheme} from 'react-native-paper';
 
 export const months = [
   'January',
@@ -266,30 +266,39 @@ const MyCalendar = ({
           activeDate.getMonth() === selcetedDate.getMonth()
         ) {
           return (
-            <View
-              key={index}
-              style={[
-                styles.eventDescription,
-                {backgroundColor: theme.colors.elevation.level1},
-              ]}>
+            <Surface key={index} style={[styles.eventDescription]}>
               {val.eventName && (
-                <Text variant="titleLarge">{val.eventName}</Text>
+                <Text variant="titleLarge" style={styles.eventDescriptionLabel}>
+                  {val.eventName}
+                </Text>
               )}
               {val.location && (
-                <Text variant="bodyMedium">Location: {val.location}</Text>
+                <Text variant="bodyMedium">
+                  <Text style={styles.eventDescriptionLabel}>Location: </Text>
+                  {val.location}
+                </Text>
               )}
               {val.eventStartDate && (
-                <Text variant="bodyMedium">Start: {val.eventStartDate}</Text>
+                <Text variant="bodyMedium">
+                  <Text style={styles.eventDescriptionLabel}>Start: </Text>
+                  {val.eventStartDate}
+                </Text>
               )}
               {val.eventEndDate && (
-                <Text variant="bodyMedium">End: {val.eventEndDate}</Text>
+                <Text variant="bodyMedium">
+                  <Text style={styles.eventDescriptionLabel}>End: </Text>
+                  {val.eventEndDate}
+                </Text>
               )}
               {val.eventDescription && (
                 <Text variant="bodyMedium">
-                  Description: {val.eventDescription}
+                  <Text style={styles.eventDescriptionLabel}>
+                    Description:{' '}
+                  </Text>
+                  {val.eventDescription}
                 </Text>
               )}
-            </View>
+            </Surface>
           );
         }
       });
@@ -357,7 +366,9 @@ const MyCalendar = ({
       <View style={styles.main}>
         {renderHeader()}
         {renderRows()}
-        {renderEventDescription()}
+        <View style={styles.eventDescriptionContainer}>
+          {renderEventDescription()}
+        </View>
       </View>
     </ScrollView>
   );
@@ -410,11 +421,19 @@ const styles = StyleSheet.create({
     height: 2.5,
     width: '100%',
   },
+  eventDescriptionContainer: {
+    width: '100%',
+    gap: 10,
+    paddingBottom: 10,
+  },
   eventDescription: {
-    flex: 1,
     minWidth: '100%',
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
     padding: 10,
+    borderRadius: 20,
+  },
+  eventDescriptionLabel: {
+    fontWeight: '700',
   },
 });
