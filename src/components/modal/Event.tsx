@@ -6,7 +6,7 @@ import VectorImage from 'react-native-vector-image';
 
 import MyCalendar, {CalendarEvent} from '../calendar/MyCalendar';
 
-interface AddEventModalProps {
+interface EventModalProps {
   /** Open/close modal */
   open: boolean;
   /** Set open/close modal */
@@ -15,14 +15,28 @@ interface AddEventModalProps {
   calendarEvent: CalendarEvent[];
   /** Set calendar event */
   setCalendarEvent: React.Dispatch<React.SetStateAction<CalendarEvent[]>>;
+  /** Is edit modal */
+  editEvent: boolean;
+  /** Set is edit modal */
+  setEditEvent: React.Dispatch<React.SetStateAction<boolean>>;
+  /** Selected calendar event */
+  selectedEvent?: CalendarEvent;
+  /** Set selected calendar event  */
+  setSelectedEvent: React.Dispatch<
+    React.SetStateAction<CalendarEvent | undefined>
+  >;
 }
 
-const AddEventModal = ({
+const EventModal = ({
   open,
   setOpen,
   calendarEvent,
   setCalendarEvent,
-}: AddEventModalProps) => {
+  editEvent,
+  setEditEvent,
+  selectedEvent,
+  setSelectedEvent,
+}: EventModalProps) => {
   const theme = useTheme();
   const [eventName, setEventName] = useState<string>('');
   const [location, setLocation] = useState<string>('');
@@ -79,6 +93,52 @@ const AddEventModal = ({
       setEndEventChange(false);
     }
   }, [endEventChange, selcetedDateEnd]);
+
+  useEffect(() => {
+    if (editEvent === true && selectedEvent !== undefined) {
+      setEventName(selectedEvent.eventName);
+      setLocation(selectedEvent.location);
+      setStartEvent(selectedEvent.eventStartDate);
+      setEndEvent(selectedEvent.eventEndDate);
+      setEventDescription(selectedEvent.eventDescription);
+    }
+  }, [editEvent, selectedEvent]);
+
+  const closeMainModal = () => {
+    setOpen(false);
+    setEditEvent(false);
+    setSelectedEvent(undefined);
+  };
+
+  const pressOk = () => {
+    if (editEvent === true && selectedEvent !== undefined) {
+      const tmp = calendarEvent;
+      const i = tmp.findIndex(item => item.id === selectedEvent.id);
+      tmp[i] = {
+        id: Math.random() + eventName,
+        eventName: eventName ? eventName : '',
+        location: location ? location : '',
+        eventStartDate: startEvent ? startEvent : '',
+        eventEndDate: endEvent ? endEvent : '',
+        eventDescription: eventDescription ? eventDescription : '',
+      };
+      setCalendarEvent(tmp);
+      closeMainModal();
+    } else {
+      setCalendarEvent([
+        ...calendarEvent,
+        {
+          id: Math.random() + eventName,
+          eventName: eventName ? eventName : '',
+          location: location ? location : '',
+          eventStartDate: startEvent ? startEvent : '',
+          eventEndDate: endEvent ? endEvent : '',
+          eventDescription: eventDescription ? eventDescription : '',
+        },
+      ]);
+      closeMainModal();
+    }
+  };
 
   const renderIcon = () => {
     return (
@@ -162,10 +222,8 @@ const AddEventModal = ({
     <View>
       <Modal
         isVisible={open}
-        onBackdropPress={() => setOpen(false)}
-        onBackButtonPress={() => {
-          setOpen(false);
-        }}>
+        onBackdropPress={closeMainModal}
+        onBackButtonPress={closeMainModal}>
         <View style={[styles.main, {backgroundColor: theme.colors.background}]}>
           <TextInput
             style={styles.textInput}
@@ -213,25 +271,10 @@ const AddEventModal = ({
             <Button
               style={styles.buttons}
               mode="contained"
-              onPress={() => setOpen(false)}>
+              onPress={closeMainModal}>
               CANCEL
             </Button>
-            <Button
-              style={styles.buttons}
-              mode="contained"
-              onPress={() => {
-                setCalendarEvent([
-                  ...calendarEvent,
-                  {
-                    eventName: eventName ? eventName : '',
-                    location: location ? location : '',
-                    eventStartDate: startEvent ? startEvent : '',
-                    eventEndDate: endEvent ? endEvent : '',
-                    eventDescription: eventDescription ? eventDescription : '',
-                  },
-                ]);
-                setOpen(false);
-              }}>
+            <Button style={styles.buttons} mode="contained" onPress={pressOk}>
               OK
             </Button>
           </View>
@@ -242,7 +285,7 @@ const AddEventModal = ({
   );
 };
 
-export default AddEventModal;
+export default EventModal;
 
 const styles = StyleSheet.create({
   main: {alignItems: 'center', padding: 40, gap: 20},

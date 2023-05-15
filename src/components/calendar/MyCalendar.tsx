@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
-import {Surface, Text, useTheme} from 'react-native-paper';
+import {Button, Text, useTheme} from 'react-native-paper';
 
 export const months = [
   'January',
@@ -24,6 +24,7 @@ export const nDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 export type Matrix = string[] | number[];
 
 export interface CalendarEvent {
+  id: string;
   /** Name of event */
   eventName: string;
   /** Loacation of event */
@@ -139,26 +140,30 @@ const MyCalendar = ({
     return (
       <View style={styles.headerView}>
         <TouchableOpacity onPress={() => onButtonClick(false)}>
-          <Text
-            style={[
-              styles.buttonHeaderMonthText,
-              {color: theme.colors.onBackground},
-            ]}>
-            {'<'}
-          </Text>
+          <Button mode="text">
+            <Text
+              style={[
+                styles.buttonHeaderMonthText,
+                {color: theme.colors.onBackground},
+              ]}>
+              {'<'}
+            </Text>
+          </Button>
         </TouchableOpacity>
         <Text style={styles.headerText}>
           {months[activeDate.getMonth()] + ' '}
           {activeDate.getFullYear()}
         </Text>
         <TouchableOpacity onPress={() => onButtonClick(true)}>
-          <Text
-            style={[
-              styles.buttonHeaderMonthText,
-              {color: theme.colors.onBackground},
-            ]}>
-            {'>'}
-          </Text>
+          <Button mode="text">
+            <Text
+              style={[
+                styles.buttonHeaderMonthText,
+                {color: theme.colors.onBackground},
+              ]}>
+              {'>'}
+            </Text>
+          </Button>
         </TouchableOpacity>
       </View>
     );
@@ -243,70 +248,6 @@ const MyCalendar = ({
     }
   };
 
-  const renderEventDescription = () => {
-    if (calendarEvent && calendarEvent.length > 0) {
-      return calendarEvent.map((val, index) => {
-        const tmpStart = val.eventStartDate.split('.');
-        const startDate = new Date(
-          Number(tmpStart[2]),
-          Number(tmpStart[1]) - 1,
-          Number(tmpStart[0]),
-        );
-
-        const tmpEnd = val.eventEndDate.split('.');
-        const endDate = new Date(
-          Number(tmpEnd[2]),
-          Number(tmpEnd[1]) - 1,
-          Number(tmpEnd[0]),
-        );
-
-        if (
-          startDate <= selcetedDate &&
-          selcetedDate <= endDate &&
-          activeDate.getMonth() === selcetedDate.getMonth()
-        ) {
-          return (
-            <Surface key={index} style={[styles.eventDescription]}>
-              {val.eventName && (
-                <Text variant="titleLarge" style={styles.eventDescriptionLabel}>
-                  {val.eventName}
-                </Text>
-              )}
-              {val.location && (
-                <Text variant="bodyMedium">
-                  <Text style={styles.eventDescriptionLabel}>Location: </Text>
-                  {val.location}
-                </Text>
-              )}
-              {val.eventStartDate && (
-                <Text variant="bodyMedium">
-                  <Text style={styles.eventDescriptionLabel}>Start: </Text>
-                  {val.eventStartDate}
-                </Text>
-              )}
-              {val.eventEndDate && (
-                <Text variant="bodyMedium">
-                  <Text style={styles.eventDescriptionLabel}>End: </Text>
-                  {val.eventEndDate}
-                </Text>
-              )}
-              {val.eventDescription && (
-                <Text variant="bodyMedium">
-                  <Text style={styles.eventDescriptionLabel}>
-                    Description:{' '}
-                  </Text>
-                  {val.eventDescription}
-                </Text>
-              )}
-            </Surface>
-          );
-        }
-      });
-    } else {
-      return <></>;
-    }
-  };
-
   const renderRows = () => {
     let rows: JSX.Element[] = [];
     const matrix: Matrix[] = generateMatrix();
@@ -366,9 +307,6 @@ const MyCalendar = ({
       <View style={styles.main}>
         {renderHeader()}
         {renderRows()}
-        <View style={styles.eventDescriptionContainer}>
-          {renderEventDescription()}
-        </View>
       </View>
     </ScrollView>
   );
@@ -420,20 +358,5 @@ const styles = StyleSheet.create({
   mark: {
     height: 2.5,
     width: '100%',
-  },
-  eventDescriptionContainer: {
-    width: '100%',
-    gap: 10,
-    paddingBottom: 10,
-  },
-  eventDescription: {
-    minWidth: '100%',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    padding: 10,
-    borderRadius: 20,
-  },
-  eventDescriptionLabel: {
-    fontWeight: '700',
   },
 });

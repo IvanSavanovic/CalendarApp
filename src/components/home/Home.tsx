@@ -1,17 +1,19 @@
 import React, {useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {useTheme} from 'react-native-paper';
+import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Surface, useTheme, Text} from 'react-native-paper';
 
 import MyCalendar, {CalendarEvent} from '../calendar/MyCalendar';
-import AddEventModal from '../modal/AddEvent';
+import EventModal from '../modal/Event';
 
 const Home = () => {
   const theme = useTheme();
   const [activeDate, setActiveDate] = useState<Date>(new Date());
   const [selcetedDate, setSelectedDate] = useState<Date>(new Date());
-  const [openAddEvent, setOpenAddEvent] = useState<boolean>(false);
+  const [openEvent, setOpenEvent] = useState<boolean>(false);
   const [calendarEvent, setCalendarEvent] = useState<CalendarEvent[]>([]);
+  const [editEvent, setEditEvent] = useState<boolean>(false);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent>();
   const colors: string[] = ['purple', 'green', 'red', 'blue'];
 
   const renderAddEventButton = () => {
@@ -31,7 +33,7 @@ const Home = () => {
                 : theme.colors.secondary,
             },
           ]}
-          onPress={() => setOpenAddEvent(true)}
+          onPress={() => setOpenEvent(true)}
           disabled={disabled}>
           <Text style={styles.addEventButtonText}>+</Text>
         </TouchableOpacity>
@@ -39,25 +41,107 @@ const Home = () => {
     );
   };
 
+  const renderEventDescription = () => {
+    if (calendarEvent && calendarEvent.length > 0) {
+      return calendarEvent.map((val, index) => {
+        const tmpStart = val.eventStartDate.split('.');
+        const startDate = new Date(
+          Number(tmpStart[2]),
+          Number(tmpStart[1]) - 1,
+          Number(tmpStart[0]),
+        );
+
+        const tmpEnd = val.eventEndDate.split('.');
+        const endDate = new Date(
+          Number(tmpEnd[2]),
+          Number(tmpEnd[1]) - 1,
+          Number(tmpEnd[0]),
+        );
+
+        if (
+          startDate <= selcetedDate &&
+          selcetedDate <= endDate &&
+          activeDate.getMonth() === selcetedDate.getMonth()
+        ) {
+          return (
+            <Surface key={index} style={[styles.eventDescription]}>
+              <TouchableOpacity
+                onPress={() => {
+                  setOpenEvent(true);
+                  setEditEvent(true);
+                  setSelectedEvent(val);
+                }}>
+                {val.eventName && (
+                  <Text
+                    variant="titleLarge"
+                    style={styles.eventDescriptionLabel}>
+                    {val.eventName + '\n'}
+                  </Text>
+                )}
+                {val.location && (
+                  <Text variant="bodyMedium">
+                    <Text style={styles.eventDescriptionLabel}>Location: </Text>
+                    {val.location}
+                  </Text>
+                )}
+                {val.eventStartDate && (
+                  <Text variant="bodyMedium">
+                    <Text style={styles.eventDescriptionLabel}>Start: </Text>
+                    {val.eventStartDate}
+                  </Text>
+                )}
+                {val.eventEndDate && (
+                  <Text variant="bodyMedium">
+                    <Text style={styles.eventDescriptionLabel}>End: </Text>
+                    {val.eventEndDate}
+                  </Text>
+                )}
+                {val.eventDescription && (
+                  <Text variant="bodyMedium">
+                    <Text style={styles.eventDescriptionLabel}>
+                      Description:{' '}
+                    </Text>
+                    {val.eventDescription}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </Surface>
+          );
+        }
+      });
+    } else {
+      return <></>;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.main}>
-      <View style={styles.calendarView}>
-        <MyCalendar
-          activeDate={activeDate}
-          setActiveDate={setActiveDate}
-          selcetedDate={selcetedDate}
-          setSelectedDate={setSelectedDate}
-          calendarEvent={calendarEvent}
-          colors={colors}
-        />
-      </View>
-      {renderAddEventButton()}
-      <AddEventModal
-        open={openAddEvent}
-        setOpen={setOpenAddEvent}
-        calendarEvent={calendarEvent}
-        setCalendarEvent={setCalendarEvent}
-      />
+      <ScrollView style={{backgroundColor: theme.colors.background}}>
+        <View style={styles.calendarView}>
+          <MyCalendar
+            activeDate={activeDate}
+            setActiveDate={setActiveDate}
+            selcetedDate={selcetedDate}
+            setSelectedDate={setSelectedDate}
+            calendarEvent={calendarEvent}
+            colors={colors}
+          />
+          {renderAddEventButton()}
+          <View style={styles.eventDescriptionContainer}>
+            {renderEventDescription()}
+          </View>
+          <EventModal
+            open={openEvent}
+            setOpen={setOpenEvent}
+            calendarEvent={calendarEvent}
+            setCalendarEvent={setCalendarEvent}
+            editEvent={editEvent}
+            setEditEvent={setEditEvent}
+            selectedEvent={selectedEvent}
+            setSelectedEvent={setSelectedEvent}
+          />
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -67,8 +151,6 @@ export default Home;
 const styles = StyleSheet.create({
   main: {
     flex: 1,
-    //justifyContent: 'center',
-    //alignItems: 'center',
   },
   calendarView: {padding: 20},
   addEventView: {
@@ -87,5 +169,22 @@ const styles = StyleSheet.create({
   addEventButtonText: {
     color: '#ffffff',
     fontSize: 32,
+  },
+  eventDescriptionContainer: {
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+    paddingBottom: 10,
+  },
+  eventDescription: {
+    minWidth: '100%',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    padding: 10,
+    borderRadius: 20,
+  },
+  eventDescriptionLabel: {
+    fontWeight: '700',
   },
 });
