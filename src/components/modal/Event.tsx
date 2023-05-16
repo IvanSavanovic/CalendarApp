@@ -1,10 +1,18 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import Modal from 'react-native-modal';
-import {useTheme, TextInput, Button, Text} from 'react-native-paper';
+import {
+  useTheme,
+  TextInput,
+  Button,
+  Text,
+  HelperText,
+} from 'react-native-paper';
 import VectorImage from 'react-native-vector-image';
 
 import MyCalendar, {CalendarEvent} from '../calendar/MyCalendar';
+
+type FormError = Omit<CalendarEvent, 'id'>;
 
 interface EventModalProps {
   /** Open/close modal */
@@ -53,6 +61,14 @@ const EventModal = ({
   const [endEventChange, setEndEventChange] = useState<boolean>(false);
   const [activeDateEnd, setActiveDateEnd] = useState<Date>(new Date());
   const [selcetedDateEnd, setSelectedDateEnd] = useState<Date>(new Date());
+  //ERRORS
+  const [error, setError] = useState<FormError>({
+    eventName: '',
+    location: '',
+    eventStartDate: '',
+    eventEndDate: '',
+    eventDescription: '',
+  });
 
   useEffect(() => {
     if (open === false) {
@@ -70,6 +86,34 @@ const EventModal = ({
     }
   }, [open]);
 
+  const setStartDateValue = useCallback(
+    (val: string) => {
+      if (endEvent === '') {
+        setStartEvent(val);
+      } else {
+        const tmpStart = val.split('.');
+        const startDate = new Date(
+          Number(tmpStart[2]),
+          Number(tmpStart[1]) - 1,
+          Number(tmpStart[0]),
+        );
+
+        const tmpEnd = endEvent.split('.');
+        const endDate = new Date(
+          Number(tmpEnd[2]),
+          Number(tmpEnd[1]) - 1,
+          Number(tmpEnd[0]),
+        );
+
+        setStartEvent(val);
+        if (endDate < startDate) {
+          setEndEvent(val);
+        }
+      }
+    },
+    [endEvent],
+  );
+
   useEffect(() => {
     if (startEventChange === true) {
       const timestring = selcetedDateStart.toLocaleString('en-GB').split(' ');
@@ -77,10 +121,39 @@ const EventModal = ({
         .replace('/', '.')
         .replace('/', '.')
         .replace(',', '');
-      setStartEvent(startDateTmp);
+      setStartDateValue(startDateTmp);
       setStartEventChange(false);
     }
-  }, [selcetedDateStart, startEventChange]);
+  }, [selcetedDateStart, setStartDateValue, startEventChange]);
+
+  const setEndDateValue = useCallback(
+    (val: string) => {
+      if (startEvent === '') {
+        setStartEvent(val);
+        setEndEvent(val);
+      } else {
+        const tmpStart = startEvent.split('.');
+        const startDate = new Date(
+          Number(tmpStart[2]),
+          Number(tmpStart[1]) - 1,
+          Number(tmpStart[0]),
+        );
+
+        const tmpEnd = val.split('.');
+        const endDate = new Date(
+          Number(tmpEnd[2]),
+          Number(tmpEnd[1]) - 1,
+          Number(tmpEnd[0]),
+        );
+
+        setEndEvent(val);
+        if (endDate < startDate) {
+          setStartEvent(val);
+        }
+      }
+    },
+    [startEvent],
+  );
 
   useEffect(() => {
     if (endEventChange === true) {
@@ -89,10 +162,10 @@ const EventModal = ({
         .replace('/', '.')
         .replace('/', '.')
         .replace(',', '');
-      setEndEvent(endDateTmp);
+      setEndDateValue(endDateTmp);
       setEndEventChange(false);
     }
-  }, [endEventChange, selcetedDateEnd]);
+  }, [selcetedDateEnd, endEventChange, setEndDateValue]);
 
   useEffect(() => {
     if (editEvent === true && selectedEvent !== undefined) {
@@ -104,13 +177,36 @@ const EventModal = ({
     }
   }, [editEvent, selectedEvent]);
 
+  const errorHandler = () => {
+    if (eventName === '' || startEvent === '' || endEvent === '') {
+      setError({
+        eventName: eventName === '' ? 'Cant be empty' : '',
+        location: error.location,
+        eventStartDate: startEvent === '' ? 'Cant be empty' : '',
+        eventEndDate: endEvent === '' ? 'Cant be empty' : '',
+        eventDescription: error.eventDescription,
+      });
+      return true;
+    }
+  };
+
   const closeMainModal = () => {
     setOpen(false);
     setEditEvent(false);
     setSelectedEvent(undefined);
+    setError({
+      eventName: '',
+      location: '',
+      eventStartDate: '',
+      eventEndDate: '',
+      eventDescription: '',
+    });
   };
 
   const pressOk = () => {
+    if (errorHandler()) {
+      return;
+    }
     if (editEvent === true && selectedEvent !== undefined) {
       const tmp = calendarEvent;
       const i = tmp.findIndex(item => item.id === selectedEvent.id);
@@ -231,17 +327,24 @@ const EventModal = ({
             onChangeText={setEventName}
             value={eventName}
           />
+          <HelperText style={styles.errorText} type="error" visible={true}>
+            {error?.eventName}
+          </HelperText>
           <TextInput
             style={styles.textInput}
             label={'Location'}
             onChangeText={setLocation}
             value={location}
           />
+          <HelperText style={styles.errorText} type="error" visible={true}>
+            {error?.location}
+          </HelperText>
           <TextInput
             style={styles.textInput}
             label={'Start: dd.mm.yyyy'}
-            onChangeText={setStartEvent}
+            onChangeText={setStartDateValue}
             value={startEvent}
+            inputMode="numeric"
             right={
               <TextInput.Icon
                 icon={() => renderIcon()}
@@ -249,11 +352,15 @@ const EventModal = ({
               />
             }
           />
+          <HelperText style={styles.errorText} type="error" visible={true}>
+            {error?.eventStartDate}
+          </HelperText>
           <TextInput
             style={styles.textInput}
             label={'End: dd.mm.yyyy'}
-            onChangeText={setEndEvent}
             value={endEvent}
+            onChangeText={setEndDateValue}
+            inputMode="numeric"
             right={
               <TextInput.Icon
                 icon={() => renderIcon()}
@@ -261,12 +368,18 @@ const EventModal = ({
               />
             }
           />
+          <HelperText style={styles.errorText} type="error" visible={true}>
+            {error?.eventEndDate}
+          </HelperText>
           <TextInput
             style={styles.textInput}
             label={'Event description'}
             onChangeText={setEventDescription}
             value={eventDescription}
           />
+          <HelperText style={styles.errorText} type="error" visible={true}>
+            {error?.eventDescription}
+          </HelperText>
           <View style={styles.buttonView}>
             <Button
               style={styles.buttons}
@@ -311,5 +424,10 @@ const styles = StyleSheet.create({
   calModalHeaderText: {
     fontSize: 22,
     fontWeight: '600',
+  },
+  errorText: {
+    position: 'relative',
+    marginTop: -22,
+    marginBottom: -22,
   },
 });

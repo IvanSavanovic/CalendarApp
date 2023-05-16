@@ -14,7 +14,14 @@ const Home = () => {
   const [calendarEvent, setCalendarEvent] = useState<CalendarEvent[]>([]);
   const [editEvent, setEditEvent] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent>();
-  const colors: string[] = ['purple', 'green', 'red', 'blue'];
+  const colors: string[] = [
+    'purple',
+    'green',
+    'red',
+    'blue',
+    'yellow',
+    'orange',
+  ];
 
   const renderAddEventButton = () => {
     const disabled = !(
@@ -71,31 +78,31 @@ const Home = () => {
                   setEditEvent(true);
                   setSelectedEvent(val);
                 }}>
-                {val.eventName && (
-                  <Text
-                    variant="titleLarge"
-                    style={styles.eventDescriptionLabel}>
-                    {val.eventName + '\n'}
-                  </Text>
-                )}
+                <Text variant="titleLarge" style={styles.eventDescriptionLabel}>
+                  {val.eventName}
+                </Text>
+                <View
+                  style={[
+                    styles.divider,
+                    {
+                      borderColor: colors[index],
+                    },
+                  ]}
+                />
                 {val.location && (
                   <Text variant="bodyMedium">
                     <Text style={styles.eventDescriptionLabel}>Location: </Text>
                     {val.location}
                   </Text>
                 )}
-                {val.eventStartDate && (
-                  <Text variant="bodyMedium">
-                    <Text style={styles.eventDescriptionLabel}>Start: </Text>
-                    {val.eventStartDate}
-                  </Text>
-                )}
-                {val.eventEndDate && (
-                  <Text variant="bodyMedium">
-                    <Text style={styles.eventDescriptionLabel}>End: </Text>
-                    {val.eventEndDate}
-                  </Text>
-                )}
+                <Text variant="bodyMedium">
+                  <Text style={styles.eventDescriptionLabel}>Start: </Text>
+                  {val.eventStartDate}
+                </Text>
+                <Text variant="bodyMedium">
+                  <Text style={styles.eventDescriptionLabel}>End: </Text>
+                  {val.eventEndDate}
+                </Text>
                 {val.eventDescription && (
                   <Text variant="bodyMedium">
                     <Text style={styles.eventDescriptionLabel}>
@@ -152,7 +159,7 @@ const styles = StyleSheet.create({
   main: {
     flex: 1,
   },
-  calendarView: {padding: 20},
+  calendarView: {paddingTop: 20, paddingBottom: 20},
   addEventView: {
     position: 'absolute',
     top: 410,
@@ -175,7 +182,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 10,
-    paddingBottom: 10,
+    padding: 10,
   },
   eventDescription: {
     minWidth: '100%',
@@ -186,5 +193,9 @@ const styles = StyleSheet.create({
   },
   eventDescriptionLabel: {
     fontWeight: '700',
+  },
+  divider: {
+    minWidth: '100%',
+    borderWidth: 1,
   },
 });
