@@ -1,18 +1,12 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
 import Modal from 'react-native-modal';
-import {
-  useTheme,
-  TextInput,
-  Button,
-  Text,
-  HelperText,
-} from 'react-native-paper';
+import {useTheme, TextInput, Button, Text} from 'react-native-paper';
 import VectorImage from 'react-native-vector-image';
 
 import MyCalendar, {CalendarEvent} from '../calendar/MyCalendar';
 
-type FormError = Omit<CalendarEvent, 'id'>;
+//type FormError = Omit<CalendarEvent, 'id'>;
 
 interface EventModalProps {
   /** Open/close modal */
@@ -61,14 +55,6 @@ const EventModal = ({
   const [endEventChange, setEndEventChange] = useState<boolean>(false);
   const [activeDateEnd, setActiveDateEnd] = useState<Date>(new Date());
   const [selcetedDateEnd, setSelectedDateEnd] = useState<Date>(new Date());
-  //ERRORS
-  const [error, setError] = useState<FormError>({
-    eventName: '',
-    location: '',
-    eventStartDate: '',
-    eventEndDate: '',
-    eventDescription: '',
-  });
 
   useEffect(() => {
     if (open === false) {
@@ -177,36 +163,13 @@ const EventModal = ({
     }
   }, [editEvent, selectedEvent]);
 
-  const errorHandler = () => {
-    if (eventName === '' || startEvent === '' || endEvent === '') {
-      setError({
-        eventName: eventName === '' ? 'Cant be empty' : '',
-        location: error.location,
-        eventStartDate: startEvent === '' ? 'Cant be empty' : '',
-        eventEndDate: endEvent === '' ? 'Cant be empty' : '',
-        eventDescription: error.eventDescription,
-      });
-      return true;
-    }
-  };
-
   const closeMainModal = () => {
     setOpen(false);
     setEditEvent(false);
     setSelectedEvent(undefined);
-    setError({
-      eventName: '',
-      location: '',
-      eventStartDate: '',
-      eventEndDate: '',
-      eventDescription: '',
-    });
   };
 
   const pressOk = () => {
-    if (errorHandler()) {
-      return;
-    }
     if (editEvent === true && selectedEvent !== undefined) {
       const tmp = calendarEvent;
       const i = tmp.findIndex(item => item.id === selectedEvent.id);
@@ -260,55 +223,57 @@ const EventModal = ({
           isVisible={openStartEventCal || openEndEventCal}
           onBackdropPress={closeModal}
           onBackButtonPress={closeModal}>
-          <View
-            style={[
-              styles.calModalHeader,
-              {backgroundColor: theme.colors.background},
-            ]}>
-            <Text style={styles.calModalHeaderText}>
-              {openStartEventCal ? 'Select start day' : 'Select end day'}
-            </Text>
-          </View>
-          <View>
-            <MyCalendar
-              activeDate={
-                (openStartEventCal && activeDateStart) || activeDateEnd
-              }
-              setActiveDate={
-                (openStartEventCal && setActiveDateStart) || setActiveDateEnd
-              }
-              selcetedDate={
-                (openStartEventCal && selcetedDateStart) || selcetedDateEnd
-              }
-              setSelectedDate={
-                (openStartEventCal && setSelectedDateStart) ||
-                setSelectedDateEnd
-              }
-            />
-          </View>
-          <View
-            style={[
-              styles.calModalButtons,
-              {backgroundColor: theme.colors.background},
-            ]}>
-            <Button
-              mode="text"
-              onPress={() => {
-                if (openStartEventCal) {
-                  setStartEventChange(true);
-                  setOpenStartEventCal(false);
+          <ScrollView>
+            <View
+              style={[
+                styles.calModalHeader,
+                {backgroundColor: theme.colors.background},
+              ]}>
+              <Text style={styles.calModalHeaderText}>
+                {openStartEventCal ? 'Select start day' : 'Select end day'}
+              </Text>
+            </View>
+            <View>
+              <MyCalendar
+                activeDate={
+                  (openStartEventCal && activeDateStart) || activeDateEnd
                 }
-                if (openEndEventCal) {
-                  setEndEventChange(true);
-                  setOpenEndEventCal(false);
+                setActiveDate={
+                  (openStartEventCal && setActiveDateStart) || setActiveDateEnd
                 }
-              }}>
-              OK
-            </Button>
-            <Button mode="text" onPress={closeModal}>
-              CANCEL
-            </Button>
-          </View>
+                selcetedDate={
+                  (openStartEventCal && selcetedDateStart) || selcetedDateEnd
+                }
+                setSelectedDate={
+                  (openStartEventCal && setSelectedDateStart) ||
+                  setSelectedDateEnd
+                }
+              />
+            </View>
+            <View
+              style={[
+                styles.calModalButtons,
+                {backgroundColor: theme.colors.background},
+              ]}>
+              <Button
+                mode="text"
+                onPress={() => {
+                  if (openStartEventCal) {
+                    setStartEventChange(true);
+                    setOpenStartEventCal(false);
+                  }
+                  if (openEndEventCal) {
+                    setEndEventChange(true);
+                    setOpenEndEventCal(false);
+                  }
+                }}>
+                OK
+              </Button>
+              <Button mode="text" onPress={closeModal}>
+                CANCEL
+              </Button>
+            </View>
+          </ScrollView>
         </Modal>
       </View>
     );
@@ -320,77 +285,72 @@ const EventModal = ({
         isVisible={open}
         onBackdropPress={closeMainModal}
         onBackButtonPress={closeMainModal}>
-        <View style={[styles.main, {backgroundColor: theme.colors.background}]}>
-          <TextInput
-            style={styles.textInput}
-            label={'Event name'}
-            onChangeText={setEventName}
-            value={eventName}
-          />
-          <HelperText style={styles.errorText} type="error" visible={true}>
-            {error?.eventName}
-          </HelperText>
-          <TextInput
-            style={styles.textInput}
-            label={'Location'}
-            onChangeText={setLocation}
-            value={location}
-          />
-          <HelperText style={styles.errorText} type="error" visible={true}>
-            {error?.location}
-          </HelperText>
-          <TextInput
-            style={styles.textInput}
-            label={'Start: dd.mm.yyyy'}
-            onChangeText={setStartDateValue}
-            value={startEvent}
-            inputMode="numeric"
-            right={
-              <TextInput.Icon
-                icon={() => renderIcon()}
-                onPress={() => setOpenStartEventCal(true)}
+        <View>
+          <ScrollView>
+            <View
+              style={[styles.main, {backgroundColor: theme.colors.background}]}>
+              <TextInput
+                style={styles.textInput}
+                label={'Event name'}
+                onChangeText={setEventName}
+                value={eventName}
               />
-            }
-          />
-          <HelperText style={styles.errorText} type="error" visible={true}>
-            {error?.eventStartDate}
-          </HelperText>
-          <TextInput
-            style={styles.textInput}
-            label={'End: dd.mm.yyyy'}
-            value={endEvent}
-            onChangeText={setEndDateValue}
-            inputMode="numeric"
-            right={
-              <TextInput.Icon
-                icon={() => renderIcon()}
-                onPress={() => setOpenEndEventCal(true)}
+              <TextInput
+                style={styles.textInput}
+                label={'Location'}
+                onChangeText={setLocation}
+                value={location}
               />
-            }
-          />
-          <HelperText style={styles.errorText} type="error" visible={true}>
-            {error?.eventEndDate}
-          </HelperText>
-          <TextInput
-            style={styles.textInput}
-            label={'Event description'}
-            onChangeText={setEventDescription}
-            value={eventDescription}
-          />
-          <HelperText style={styles.errorText} type="error" visible={true}>
-            {error?.eventDescription}
-          </HelperText>
-          <View style={styles.buttonView}>
-            <Button
-              style={styles.buttons}
-              mode="contained"
-              onPress={closeMainModal}>
-              CANCEL
-            </Button>
-            <Button style={styles.buttons} mode="contained" onPress={pressOk}>
-              OK
-            </Button>
-          </View>
+              <TextInput
+                style={styles.textInput}
+                label={'Start: dd.mm.yyyy'}
+                onChangeText={setStartDateValue}
+                value={startEvent}
+                inputMode="numeric"
+                showSoftInputOnFocus={openStartEventCal === true ? false : true}
+                right={
+                  <TextInput.Icon
+                    icon={() => renderIcon()}
+                    onPress={() => setOpenStartEventCal(true)}
+                  />
+                }
+              />
+              <TextInput
+                style={styles.textInput}
+                label={'End: dd.mm.yyyy'}
+                value={endEvent}
+                onChangeText={setEndDateValue}
+                inputMode="numeric"
+                showSoftInputOnFocus={openEndEventCal === true ? false : true}
+                right={
+                  <TextInput.Icon
+                    icon={() => renderIcon()}
+                    onPress={() => setOpenEndEventCal(true)}
+                  />
+                }
+              />
+              <TextInput
+                style={styles.textInput}
+                label={'Event description'}
+                onChangeText={setEventDescription}
+                value={eventDescription}
+              />
+              <View style={styles.buttonView}>
+                <Button
+                  style={styles.buttons}
+                  mode="contained"
+                  onPress={closeMainModal}>
+                  CANCEL
+                </Button>
+                <Button
+                  style={styles.buttons}
+                  mode="contained"
+                  onPress={pressOk}>
+                  OK
+                </Button>
+              </View>
+            </View>
+          </ScrollView>
         </View>
       </Modal>
       {renderCalendarModal()}
@@ -401,7 +361,11 @@ const EventModal = ({
 export default EventModal;
 
 const styles = StyleSheet.create({
-  main: {alignItems: 'center', padding: 40, gap: 20},
+  main: {
+    alignItems: 'center',
+    padding: 40,
+    gap: 20,
+  },
   textInput: {
     width: '100%',
   },
@@ -424,10 +388,5 @@ const styles = StyleSheet.create({
   calModalHeaderText: {
     fontSize: 22,
     fontWeight: '600',
-  },
-  errorText: {
-    position: 'relative',
-    marginTop: -22,
-    marginBottom: -22,
   },
 });

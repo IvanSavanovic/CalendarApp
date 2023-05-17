@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Surface, useTheme, Text} from 'react-native-paper';
+import {useWindowDimensions} from 'react-native';
 
 import MyCalendar, {CalendarEvent} from '../calendar/MyCalendar';
 import EventModal from '../modal/Event';
@@ -14,6 +15,7 @@ const Home = () => {
   const [calendarEvent, setCalendarEvent] = useState<CalendarEvent[]>([]);
   const [editEvent, setEditEvent] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent>();
+  const {width} = useWindowDimensions();
   const colors: string[] = [
     'purple',
     'green',
@@ -28,9 +30,10 @@ const Home = () => {
       activeDate.getMonth() === selcetedDate.getMonth() &&
       activeDate.getFullYear() === selcetedDate.getFullYear()
     );
+    const right = {right: width > 400 ? '29%' : 30};
 
     return (
-      <View style={styles.addEventView}>
+      <View style={[styles.addEventView, right]}>
         <TouchableOpacity
           style={[
             styles.addEventButton,

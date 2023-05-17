@@ -322,6 +322,7 @@ const styles = StyleSheet.create({
   },
   headerView: {
     width: '100%',
+    maxWidth: 400,
     alignItems: 'center',
     justifyContent: 'space-around',
     flexDirection: 'row',
