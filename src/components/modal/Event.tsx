@@ -223,57 +223,60 @@ const EventModal = ({
           isVisible={openStartEventCal || openEndEventCal}
           onBackdropPress={closeModal}
           onBackButtonPress={closeModal}>
-          <ScrollView>
-            <View
-              style={[
-                styles.calModalHeader,
-                {backgroundColor: theme.colors.background},
-              ]}>
-              <Text style={styles.calModalHeaderText}>
-                {openStartEventCal ? 'Select start day' : 'Select end day'}
-              </Text>
-            </View>
-            <View>
-              <MyCalendar
-                activeDate={
-                  (openStartEventCal && activeDateStart) || activeDateEnd
-                }
-                setActiveDate={
-                  (openStartEventCal && setActiveDateStart) || setActiveDateEnd
-                }
-                selcetedDate={
-                  (openStartEventCal && selcetedDateStart) || selcetedDateEnd
-                }
-                setSelectedDate={
-                  (openStartEventCal && setSelectedDateStart) ||
-                  setSelectedDateEnd
-                }
-              />
-            </View>
-            <View
-              style={[
-                styles.calModalButtons,
-                {backgroundColor: theme.colors.background},
-              ]}>
-              <Button
-                mode="text"
-                onPress={() => {
-                  if (openStartEventCal) {
-                    setStartEventChange(true);
-                    setOpenStartEventCal(false);
+          <View>
+            <ScrollView>
+              <View
+                style={[
+                  styles.calModalHeader,
+                  {backgroundColor: theme.colors.background},
+                ]}>
+                <Text style={styles.calModalHeaderText}>
+                  {openStartEventCal ? 'Select start day' : 'Select end day'}
+                </Text>
+              </View>
+              <View>
+                <MyCalendar
+                  activeDate={
+                    (openStartEventCal && activeDateStart) || activeDateEnd
                   }
-                  if (openEndEventCal) {
-                    setEndEventChange(true);
-                    setOpenEndEventCal(false);
+                  setActiveDate={
+                    (openStartEventCal && setActiveDateStart) ||
+                    setActiveDateEnd
                   }
-                }}>
-                OK
-              </Button>
-              <Button mode="text" onPress={closeModal}>
-                CANCEL
-              </Button>
-            </View>
-          </ScrollView>
+                  selcetedDate={
+                    (openStartEventCal && selcetedDateStart) || selcetedDateEnd
+                  }
+                  setSelectedDate={
+                    (openStartEventCal && setSelectedDateStart) ||
+                    setSelectedDateEnd
+                  }
+                />
+              </View>
+              <View
+                style={[
+                  styles.calModalButtons,
+                  {backgroundColor: theme.colors.background},
+                ]}>
+                <Button
+                  mode="text"
+                  onPress={() => {
+                    if (openStartEventCal) {
+                      setStartEventChange(true);
+                      setOpenStartEventCal(false);
+                    }
+                    if (openEndEventCal) {
+                      setEndEventChange(true);
+                      setOpenEndEventCal(false);
+                    }
+                  }}>
+                  OK
+                </Button>
+                <Button mode="text" onPress={closeModal}>
+                  CANCEL
+                </Button>
+              </View>
+            </ScrollView>
+          </View>
         </Modal>
       </View>
     );
@@ -307,11 +310,12 @@ const EventModal = ({
                 onChangeText={setStartDateValue}
                 value={startEvent}
                 inputMode="numeric"
-                showSoftInputOnFocus={openStartEventCal === true ? false : true}
+                //showSoftInputOnFocus={openStartEventCal === true ? false : true}
                 right={
                   <TextInput.Icon
                     icon={() => renderIcon()}
                     onPress={() => setOpenStartEventCal(true)}
+                    forceTextInputFocus={false}
                   />
                 }
               />
@@ -321,11 +325,12 @@ const EventModal = ({
                 value={endEvent}
                 onChangeText={setEndDateValue}
                 inputMode="numeric"
-                showSoftInputOnFocus={openEndEventCal === true ? false : true}
+                //showSoftInputOnFocus={openEndEventCal === true ? false : true}
                 right={
                   <TextInput.Icon
                     icon={() => renderIcon()}
                     onPress={() => setOpenEndEventCal(true)}
+                    forceTextInputFocus={false}
                   />
                 }
               />
