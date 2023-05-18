@@ -224,14 +224,14 @@ const EventModal = ({
           onBackdropPress={closeModal}
           onBackButtonPress={closeModal}>
           <View>
-            <ScrollView>
+            <ScrollView style={{backgroundColor: theme.colors.background}}>
               <View
                 style={[
                   styles.calModalHeader,
                   {backgroundColor: theme.colors.background},
                 ]}>
                 <Text style={styles.calModalHeaderText}>
-                  {openStartEventCal ? 'Select start day' : 'Select end day'}
+                  {openStartEventCal ? 'Select start date' : 'Select end date'}
                 </Text>
               </View>
               <View>
