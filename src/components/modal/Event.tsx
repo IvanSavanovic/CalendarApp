@@ -250,6 +250,7 @@ const EventModal = ({
                     (openStartEventCal && setSelectedDateStart) ||
                     setSelectedDateEnd
                   }
+                  hideAddEventButton={true}
                 />
               </View>
               <View

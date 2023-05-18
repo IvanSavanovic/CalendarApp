@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
-import {Button, Text, useTheme} from 'react-native-paper';
+import {Text, useTheme} from 'react-native-paper';
 
 export const months = [
   'January',
@@ -53,6 +53,10 @@ interface MyCalendarProps {
   calendarEvent?: CalendarEvent[];
   /** Colors of events */
   colors?: string[];
+  /** Set open add event */
+  setOpenEvent?: React.Dispatch<React.SetStateAction<boolean>>;
+  /** Hide add event button (if true button is hidden) */
+  hideAddEventButton?: boolean;
 }
 
 const MyCalendar = ({
@@ -62,6 +66,8 @@ const MyCalendar = ({
   setSelectedDate,
   calendarEvent,
   colors,
+  setOpenEvent,
+  hideAddEventButton,
 }: MyCalendarProps) => {
   const theme = useTheme();
   const [today] = useState<Date>(new Date());
@@ -136,40 +142,7 @@ const MyCalendar = ({
     }
   };
 
-  const renderHeader = () => {
-    return (
-      <View style={styles.headerView}>
-        <TouchableOpacity onPress={() => onButtonClick(false)}>
-          <Button mode="text">
-            <Text
-              style={[
-                styles.buttonHeaderMonthText,
-                {color: theme.colors.onBackground},
-              ]}>
-              {'<'}
-            </Text>
-          </Button>
-        </TouchableOpacity>
-        <Text style={styles.headerText}>
-          {months[activeDate.getMonth()] + ' '}
-          {activeDate.getFullYear()}
-        </Text>
-        <TouchableOpacity onPress={() => onButtonClick(true)}>
-          <Button mode="text">
-            <Text
-              style={[
-                styles.buttonHeaderMonthText,
-                {color: theme.colors.onBackground},
-              ]}>
-              {'>'}
-            </Text>
-          </Button>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const generateMatrix = () => {
+  const generateCalendarMatrix = () => {
     var matrix: Matrix[] = [];
     // Creates the header
     matrix[0] = weekDays;
@@ -202,6 +175,67 @@ const MyCalendar = ({
     }
 
     return matrix;
+  };
+
+  const renderHeader = () => {
+    return (
+      <View style={styles.headerView}>
+        <TouchableOpacity
+          style={styles.opacityButtonChangeMonth}
+          onPress={() => onButtonClick(false)}>
+          <Text
+            adjustsFontSizeToFit={true}
+            style={[
+              styles.buttonHeaderMonthText,
+              {color: theme.colors.onBackground},
+            ]}>
+            {'<'}
+          </Text>
+        </TouchableOpacity>
+        <Text style={styles.headerText}>
+          {months[activeDate.getMonth()] + ' '}
+          {activeDate.getFullYear()}
+        </Text>
+        <TouchableOpacity
+          style={styles.opacityButtonChangeMonth}
+          onPress={() => onButtonClick(true)}>
+          <Text
+            adjustsFontSizeToFit={true}
+            style={[
+              styles.buttonHeaderMonthText,
+              {color: theme.colors.onBackground},
+            ]}>
+            {'>'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderAddEventButton = () => {
+    const disabled = !(
+      activeDate.getMonth() === selcetedDate.getMonth() &&
+      activeDate.getFullYear() === selcetedDate.getFullYear()
+    );
+    if (hideAddEventButton !== true) {
+      return (
+        <View>
+          <TouchableOpacity
+            style={[
+              styles.addEventButton,
+              {
+                backgroundColor: disabled
+                  ? theme.colors.onSurfaceDisabled
+                  : theme.colors.secondary,
+              },
+            ]}
+            onPress={() => setOpenEvent && setOpenEvent(true)}
+            disabled={disabled}>
+            <Text style={[styles.addEventButtonText]}>+</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
   };
 
   const renderEventMark = (item: string | number) => {
@@ -250,24 +284,21 @@ const MyCalendar = ({
 
   const renderRows = () => {
     let rows: JSX.Element[] = [];
-    const matrix: Matrix[] = generateMatrix();
+    const matrix: Matrix[] = generateCalendarMatrix();
 
     rows = matrix.map((row: string[] | number[], rowIndex: number) => {
       const rowItems = row.map((item: string | number, colIndex: number) => {
-        const textColor = {
-          color: textColorForCalendarDates(Number(item), colIndex),
-        };
-        // Highlight current date
-        const opacityBackgroundColor = {
-          backgroundColor: highlightSelectedDate(Number(item)),
-        };
-
         return (
           <View
             key={
               String(colIndex) + String(Number(item) === selcetedDate.getDate())
             }
-            style={[styles.dateOpacityView, opacityBackgroundColor]}>
+            style={[
+              styles.dateOpacityView,
+              {
+                backgroundColor: highlightSelectedDate(Number(item)),
+              },
+            ]}>
             <TouchableOpacity
               style={styles.dateOpacity}
               disabled={Number(item) ? false : true}
@@ -282,8 +313,16 @@ const MyCalendar = ({
                   );
                 }
               }}>
-              <Text style={[styles.textColumn, textColor]}>
+              <Text
+                adjustsFontSizeToFit={true}
+                style={[
+                  styles.textColumn,
+                  {
+                    color: textColorForCalendarDates(Number(item), colIndex),
+                  },
+                ]}>
                 {item !== -1 ? item : ''}
+                {colIndex === 6 && rowIndex === 6 && renderAddEventButton()}
               </Text>
               {renderEventMark(item)}
             </TouchableOpacity>
@@ -324,25 +363,36 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     alignItems: 'center',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     flexDirection: 'row',
     gap: 10,
+    paddingLeft: 10,
+    paddingRight: 10,
   },
   headerText: {
     fontWeight: '900',
     fontSize: 18,
     textAlign: 'center',
   },
+  opacityButtonChangeMonth: {
+    width: 64,
+    height: 38,
+    marginBottom: -5,
+  },
   buttonHeaderMonthText: {fontWeight: '900', fontSize: 20, textAlign: 'center'},
   dateOpacityView: {
-    width: 50,
-    height: 50,
+    width: 52,
+    height: 52,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 100,
   },
   dateOpacity: {
-    width: '100%',
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 100,
   },
   textColumn: {
     textAlign: 'center',
@@ -359,5 +409,17 @@ const styles = StyleSheet.create({
   mark: {
     height: 2.5,
     width: '100%',
+  },
+  addEventButton: {
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    borderRadius: 100,
+  },
+  addEventButtonText: {
+    color: '#ffffff',
+    fontSize: 32,
   },
 });
