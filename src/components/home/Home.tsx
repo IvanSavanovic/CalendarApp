@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Surface, useTheme, Text} from 'react-native-paper';
-import {useWindowDimensions} from 'react-native';
 
 import MyCalendar, {CalendarEvent} from '../calendar/MyCalendar';
 import EventModal from '../modal/Event';
@@ -15,7 +14,6 @@ const Home = () => {
   const [calendarEvent, setCalendarEvent] = useState<CalendarEvent[]>([]);
   const [editEvent, setEditEvent] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent>();
-  const {width} = useWindowDimensions();
   const colors: string[] = [
     'purple',
     'green',
@@ -24,32 +22,6 @@ const Home = () => {
     'yellow',
     'orange',
   ];
-
-  const renderAddEventButton = () => {
-    const disabled = !(
-      activeDate.getMonth() === selcetedDate.getMonth() &&
-      activeDate.getFullYear() === selcetedDate.getFullYear()
-    );
-    const right = {right: width > 400 ? '29%' : 30};
-
-    return (
-      <View style={[styles.addEventView, right]}>
-        <TouchableOpacity
-          style={[
-            styles.addEventButton,
-            {
-              backgroundColor: disabled
-                ? theme.colors.onSurfaceDisabled
-                : theme.colors.secondary,
-            },
-          ]}
-          onPress={() => setOpenEvent(true)}
-          disabled={disabled}>
-          <Text style={styles.addEventButtonText}>+</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
 
   const renderEventDescription = () => {
     if (calendarEvent && calendarEvent.length > 0) {
@@ -135,8 +107,8 @@ const Home = () => {
             setSelectedDate={setSelectedDate}
             calendarEvent={calendarEvent}
             colors={colors}
+            setOpenEvent={setOpenEvent}
           />
-          {renderAddEventButton()}
           <View style={styles.eventDescriptionContainer}>
             {renderEventDescription()}
           </View>
@@ -163,23 +135,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   calendarView: {paddingTop: 20, paddingBottom: 20},
-  addEventView: {
-    position: 'absolute',
-    top: 410,
-    right: 30,
-  },
-  addEventButton: {
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    textAlign: 'center',
-    borderRadius: 100,
-  },
-  addEventButtonText: {
-    color: '#ffffff',
-    fontSize: 32,
-  },
   eventDescriptionContainer: {
     width: '100%',
     justifyContent: 'center',

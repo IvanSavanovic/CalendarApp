@@ -224,34 +224,33 @@ const EventModal = ({
           onBackdropPress={closeModal}
           onBackButtonPress={closeModal}>
           <View>
-            <ScrollView>
+            <ScrollView style={{backgroundColor: theme.colors.background}}>
               <View
                 style={[
                   styles.calModalHeader,
                   {backgroundColor: theme.colors.background},
                 ]}>
                 <Text style={styles.calModalHeaderText}>
-                  {openStartEventCal ? 'Select start day' : 'Select end day'}
+                  {openStartEventCal ? 'Select start date' : 'Select end date'}
                 </Text>
               </View>
-              <View>
-                <MyCalendar
-                  activeDate={
-                    (openStartEventCal && activeDateStart) || activeDateEnd
-                  }
-                  setActiveDate={
-                    (openStartEventCal && setActiveDateStart) ||
-                    setActiveDateEnd
-                  }
-                  selcetedDate={
-                    (openStartEventCal && selcetedDateStart) || selcetedDateEnd
-                  }
-                  setSelectedDate={
-                    (openStartEventCal && setSelectedDateStart) ||
-                    setSelectedDateEnd
-                  }
-                />
-              </View>
+              <MyCalendar
+                activeDate={
+                  (openStartEventCal && activeDateStart) || activeDateEnd
+                }
+                setActiveDate={
+                  (openStartEventCal && setActiveDateStart) || setActiveDateEnd
+                }
+                selcetedDate={
+                  (openStartEventCal && selcetedDateStart) || selcetedDateEnd
+                }
+                setSelectedDate={
+                  (openStartEventCal && setSelectedDateStart) ||
+                  setSelectedDateEnd
+                }
+                hideAddEventButton={true}
+                resize={-5}
+              />
               <View
                 style={[
                   styles.calModalButtons,
@@ -310,7 +309,6 @@ const EventModal = ({
                 onChangeText={setStartDateValue}
                 value={startEvent}
                 inputMode="numeric"
-                //showSoftInputOnFocus={openStartEventCal === true ? false : true}
                 right={
                   <TextInput.Icon
                     icon={() => renderIcon()}
@@ -325,7 +323,6 @@ const EventModal = ({
                 value={endEvent}
                 onChangeText={setEndDateValue}
                 inputMode="numeric"
-                //showSoftInputOnFocus={openEndEventCal === true ? false : true}
                 right={
                   <TextInput.Icon
                     icon={() => renderIcon()}
