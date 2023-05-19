@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Text, useTheme} from 'react-native-paper';
+import {useSwipe} from '../hooks/useSwipe';
 
 export const months = [
   'January',
@@ -57,6 +58,8 @@ interface MyCalendarProps {
   setOpenEvent?: React.Dispatch<React.SetStateAction<boolean>>;
   /** Hide add event button (if true button is hidden) */
   hideAddEventButton?: boolean;
+  /** Resize selected date cicrle by x */
+  resize?: number;
 }
 
 const MyCalendar = ({
@@ -68,6 +71,7 @@ const MyCalendar = ({
   colors,
   setOpenEvent,
   hideAddEventButton,
+  resize,
 }: MyCalendarProps) => {
   const theme = useTheme();
   const [today] = useState<Date>(new Date());
@@ -139,6 +143,15 @@ const MyCalendar = ({
           new Date(activeDate.getFullYear(), activeDate.getMonth() - 1, 1),
         );
       }
+    }
+  };
+
+  const sizeOfPressEl = (additonlSize?: number) => {
+    const tmp = additonlSize ? additonlSize : 0;
+    if (resize !== undefined) {
+      return {height: 50 + resize + tmp, width: 50 + resize + tmp};
+    } else {
+      return {height: 50 + tmp, width: 50 + tmp};
     }
   };
 
@@ -290,42 +303,46 @@ const MyCalendar = ({
       const rowItems = row.map((item: string | number, colIndex: number) => {
         return (
           <View
+            style={styles.dateAndMarkView}
             key={
               String(colIndex) + String(Number(item) === selcetedDate.getDate())
-            }
-            style={[
-              styles.dateOpacityView,
-              {
-                backgroundColor: highlightSelectedDate(Number(item)),
-              },
-            ]}>
-            <TouchableOpacity
-              style={styles.dateOpacity}
-              disabled={Number(item) ? false : true}
-              onPress={() => {
-                if (Number(item) && Number(item) > -1) {
-                  setSelectedDate(
-                    new Date(
-                      activeDate.getFullYear(),
-                      activeDate.getMonth(),
-                      Number(item),
-                    ),
-                  );
-                }
-              }}>
-              <Text
-                adjustsFontSizeToFit={true}
-                style={[
-                  styles.textColumn,
-                  {
-                    color: textColorForCalendarDates(Number(item), colIndex),
-                  },
-                ]}>
-                {item !== -1 ? item : ''}
-                {colIndex === 6 && rowIndex === 6 && renderAddEventButton()}
-              </Text>
-              {renderEventMark(item)}
-            </TouchableOpacity>
+            }>
+            <View
+              style={[
+                styles.dateOpacityView,
+                sizeOfPressEl(2),
+                {
+                  backgroundColor: highlightSelectedDate(Number(item)),
+                },
+              ]}>
+              <TouchableOpacity
+                style={[styles.dateOpacity, sizeOfPressEl(0)]}
+                disabled={Number(item) ? false : true}
+                onPress={() => {
+                  if (Number(item) && Number(item) > -1) {
+                    setSelectedDate(
+                      new Date(
+                        activeDate.getFullYear(),
+                        activeDate.getMonth(),
+                        Number(item),
+                      ),
+                    );
+                  }
+                }}>
+                <Text
+                  adjustsFontSizeToFit={true}
+                  style={[
+                    styles.textColumn,
+                    {
+                      color: textColorForCalendarDates(Number(item), colIndex),
+                    },
+                  ]}>
+                  {item !== -1 ? item : ''}
+                  {colIndex === 6 && rowIndex === 6 && renderAddEventButton()}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {renderEventMark(item)}
           </View>
         );
       });
@@ -341,8 +358,22 @@ const MyCalendar = ({
     return rows;
   };
 
+  const onSwipeLeft = () => {
+    onButtonClick(false);
+  };
+
+  const onSwipeRight = () => {
+    onButtonClick(true);
+  };
+
+  const {onTouchStart, onTouchEnd} = useSwipe(onSwipeLeft, onSwipeRight, 6);
   return (
-    <ScrollView style={{backgroundColor: theme.colors.background}}>
+    <ScrollView
+      style={{
+        backgroundColor: theme.colors.background,
+      }}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}>
       <View style={styles.main}>
         {renderHeader()}
         {renderRows()}
@@ -355,13 +386,13 @@ export default MyCalendar;
 
 const styles = StyleSheet.create({
   main: {
-    width: '100%',
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerView: {
     width: '100%',
-    maxWidth: 400,
+    maxWidth: 600,
     alignItems: 'center',
     justifyContent: 'space-between',
     flexDirection: 'row',
@@ -380,16 +411,17 @@ const styles = StyleSheet.create({
     marginBottom: -5,
   },
   buttonHeaderMonthText: {fontWeight: '900', fontSize: 20, textAlign: 'center'},
+  dateAndMarkView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   dateOpacityView: {
-    width: 52,
-    height: 52,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 100,
   },
   dateOpacity: {
-    width: 50,
-    height: 50,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 100,
@@ -401,6 +433,8 @@ const styles = StyleSheet.create({
   },
   dateRow: {
     flex: 1,
+    width: '100%',
+    maxWidth: 700,
     flexDirection: 'row',
     paddingTop: 5,
     paddingBottom: 5,
