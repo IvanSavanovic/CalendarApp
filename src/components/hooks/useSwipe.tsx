@@ -1,6 +1,13 @@
 import {Dimensions, GestureResponderEvent} from 'react-native';
 const windowWidth = Dimensions.get('window').width;
 
+/**
+ * A React Hook that enables left and right swipe gestures
+ * @param onSwipeLeft void function that is called for left swipe direction
+ * @param onSwipeRight void function that is called for right swipe direction
+ * @param rangeOffset precision of swipe detection
+ * @returns onTouchStart and onTouchEnd
+ */
 export const useSwipe = (
   onSwipeLeft?: () => void,
   onSwipeRight?: () => void,
@@ -8,22 +15,22 @@ export const useSwipe = (
 ) => {
   let firstTouch = 0;
 
-  // set user touch start position
+  // Set user touch start position
   const onTouchStart = (e: GestureResponderEvent) => {
     firstTouch = e.nativeEvent.pageX;
   };
 
-  // when touch ends check for swipe directions
+  // When touch ends check for swipe directions
   const onTouchEnd = (e: GestureResponderEvent) => {
-    // get touch position and screen size
+    // Get touch position and screen size
     const positionX = e.nativeEvent.pageX;
     const range = windowWidth / rangeOffset;
 
-    // check if position is growing positively and has reached specified range
+    // Check if position is growing positively and has reached specified range
     if (positionX - firstTouch > range) {
       onSwipeRight && onSwipeRight();
     }
-    // check if position is growing negatively and has reached specified range
+    // Check if position is growing negatively and has reached specified range
     else if (firstTouch - positionX > range) {
       onSwipeLeft && onSwipeLeft();
     }
