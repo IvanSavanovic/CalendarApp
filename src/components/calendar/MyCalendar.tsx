@@ -122,7 +122,7 @@ const MyCalendar = ({
     }
   };
 
-  const onButtonClick = (add: boolean) => {
+  const onChangeMonthButtonClick = (add: boolean) => {
     if (add) {
       if (activeDate.getMonth() + 1 > 11) {
         setActiveDate(new Date(activeDate.getFullYear() + 1, 0, 1));
@@ -195,7 +195,7 @@ const MyCalendar = ({
       <View style={styles.headerView}>
         <TouchableOpacity
           style={styles.opacityButtonChangeMonth}
-          onPress={() => onButtonClick(false)}>
+          onPress={() => onChangeMonthButtonClick(false)}>
           <Text
             adjustsFontSizeToFit={true}
             style={[
@@ -211,7 +211,7 @@ const MyCalendar = ({
         </Text>
         <TouchableOpacity
           style={styles.opacityButtonChangeMonth}
-          onPress={() => onButtonClick(true)}>
+          onPress={() => onChangeMonthButtonClick(true)}>
           <Text
             adjustsFontSizeToFit={true}
             style={[
@@ -359,11 +359,13 @@ const MyCalendar = ({
   };
 
   const onSwipeLeft = () => {
-    onButtonClick(false);
+    //Next month
+    onChangeMonthButtonClick(true);
   };
 
   const onSwipeRight = () => {
-    onButtonClick(true);
+    //Previous month
+    onChangeMonthButtonClick(false);
   };
 
   const {onTouchStart, onTouchEnd} = useSwipe(onSwipeLeft, onSwipeRight, 6);
