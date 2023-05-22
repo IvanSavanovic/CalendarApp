@@ -1,7 +1,10 @@
 import React, {useState} from 'react';
 import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Text, useTheme} from 'react-native-paper';
+
 import {useSwipe} from '../hooks/useSwipe';
+import AddEventButton from './AddEventButton';
+import CalendarHeader, {onChangeMonthButtonClick} from './CalendarHeader';
 
 export const months = [
   'January',
@@ -40,7 +43,7 @@ export interface CalendarEvent {
 
 interface MyCalendarProps {
   /** Active date should be just new Date() -
-   *  is used for generating date matrix changing months/years
+   *  it is used for generating date matrix changing months/years
    *  and checking if event button is disabled
    * */
   activeDate: Date;
@@ -75,6 +78,15 @@ const MyCalendar = ({
 }: MyCalendarProps) => {
   const theme = useTheme();
   const [today] = useState<Date>(new Date());
+  const onSwipeLeft = () => {
+    //Next month
+    onChangeMonthButtonClick(true, activeDate, setActiveDate);
+  };
+  const onSwipeRight = () => {
+    //Previous month
+    onChangeMonthButtonClick(false, activeDate, setActiveDate);
+  };
+  const {onTouchStart, onTouchEnd} = useSwipe(onSwipeLeft, onSwipeRight, 6);
 
   const textColorForCalendarDates = (item: number, colIndex: number) => {
     /** Highlight today in calendar */
@@ -122,30 +134,6 @@ const MyCalendar = ({
     }
   };
 
-  const onChangeMonthButtonClick = (add: boolean) => {
-    if (add) {
-      if (activeDate.getMonth() + 1 > 11) {
-        setActiveDate(new Date(activeDate.getFullYear() + 1, 0, 1));
-      } else {
-        setActiveDate(
-          new Date(
-            activeDate.getFullYear(),
-            activeDate.getMonth() + 1,
-            activeDate.getDate(),
-          ),
-        );
-      }
-    } else {
-      if (activeDate.getMonth() - 1 < 0) {
-        setActiveDate(new Date(activeDate.getFullYear() - 1, 11, 1));
-      } else {
-        setActiveDate(
-          new Date(activeDate.getFullYear(), activeDate.getMonth() - 1, 1),
-        );
-      }
-    }
-  };
-
   const sizeOfPressEl = (additonlSize?: number) => {
     const tmp = additonlSize ? additonlSize : 0;
     if (resize !== undefined) {
@@ -156,7 +144,7 @@ const MyCalendar = ({
   };
 
   const generateCalendarMatrix = () => {
-    var matrix: Matrix[] = [];
+    let matrix: Matrix[] = [];
     // Creates the header
     matrix[0] = weekDays;
 
@@ -190,70 +178,9 @@ const MyCalendar = ({
     return matrix;
   };
 
-  const renderHeader = () => {
-    return (
-      <View style={styles.headerView}>
-        <TouchableOpacity
-          style={styles.opacityButtonChangeMonth}
-          onPress={() => onChangeMonthButtonClick(false)}>
-          <Text
-            adjustsFontSizeToFit={true}
-            style={[
-              styles.buttonHeaderMonthText,
-              {color: theme.colors.onBackground},
-            ]}>
-            {'<'}
-          </Text>
-        </TouchableOpacity>
-        <Text style={styles.headerText}>
-          {months[activeDate.getMonth()] + ' '}
-          {activeDate.getFullYear()}
-        </Text>
-        <TouchableOpacity
-          style={styles.opacityButtonChangeMonth}
-          onPress={() => onChangeMonthButtonClick(true)}>
-          <Text
-            adjustsFontSizeToFit={true}
-            style={[
-              styles.buttonHeaderMonthText,
-              {color: theme.colors.onBackground},
-            ]}>
-            {'>'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const renderAddEventButton = () => {
-    const disabled = !(
-      activeDate.getMonth() === selcetedDate.getMonth() &&
-      activeDate.getFullYear() === selcetedDate.getFullYear()
-    );
-    if (hideAddEventButton !== true) {
-      return (
-        <View>
-          <TouchableOpacity
-            style={[
-              styles.addEventButton,
-              {
-                backgroundColor: disabled
-                  ? theme.colors.onSurfaceDisabled
-                  : theme.colors.secondary,
-              },
-            ]}
-            onPress={() => setOpenEvent && setOpenEvent(true)}
-            disabled={disabled}>
-            <Text style={[styles.addEventButtonText]}>+</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
-  };
-
   const renderEventMark = (item: string | number) => {
     if (isNaN(Number(item)) || Number(item) === -1) {
-      return <></>;
+      return undefined;
     }
 
     if (calendarEvent && calendarEvent.length > 0) {
@@ -285,7 +212,7 @@ const MyCalendar = ({
               style={[
                 styles.mark,
                 {
-                  backgroundColor: colors && colors[index],
+                  borderColor: colors && colors[index],
                 },
               ]}
             />
@@ -338,7 +265,14 @@ const MyCalendar = ({
                     },
                   ]}>
                   {item !== -1 ? item : ''}
-                  {colIndex === 6 && rowIndex === 6 && renderAddEventButton()}
+                  {colIndex === 6 && rowIndex === 6 && (
+                    <AddEventButton
+                      activeDate={activeDate}
+                      selcetedDate={selcetedDate}
+                      hideAddEventButton={hideAddEventButton}
+                      setOpenEvent={setOpenEvent}
+                    />
+                  )}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -358,17 +292,6 @@ const MyCalendar = ({
     return rows;
   };
 
-  const onSwipeLeft = () => {
-    //Next month
-    onChangeMonthButtonClick(true);
-  };
-
-  const onSwipeRight = () => {
-    //Previous month
-    onChangeMonthButtonClick(false);
-  };
-
-  const {onTouchStart, onTouchEnd} = useSwipe(onSwipeLeft, onSwipeRight, 6);
   return (
     <ScrollView
       style={{
@@ -377,7 +300,7 @@ const MyCalendar = ({
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}>
       <View style={styles.main}>
-        {renderHeader()}
+        <CalendarHeader activeDate={activeDate} setActiveDate={setActiveDate} />
         {renderRows()}
       </View>
     </ScrollView>
@@ -392,27 +315,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerView: {
-    width: '100%',
-    maxWidth: 600,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-    gap: 10,
-    paddingLeft: 10,
-    paddingRight: 10,
-  },
-  headerText: {
-    fontWeight: '900',
-    fontSize: 18,
-    textAlign: 'center',
-  },
-  opacityButtonChangeMonth: {
-    width: 64,
-    height: 38,
-    marginBottom: -5,
-  },
-  buttonHeaderMonthText: {fontWeight: '900', fontSize: 20, textAlign: 'center'},
   dateAndMarkView: {
     flex: 1,
     justifyContent: 'center',
@@ -443,19 +345,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   mark: {
-    height: 2.5,
+    borderWidth: 1,
     width: '100%',
-  },
-  addEventButton: {
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    textAlign: 'center',
-    borderRadius: 100,
-  },
-  addEventButtonText: {
-    color: '#ffffff',
-    fontSize: 32,
   },
 });
