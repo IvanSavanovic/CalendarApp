@@ -5,6 +5,7 @@
 - [@react-native-paper](https://callstack.github.io/react-native-paper/docs/guides/getting-started/)
 - [react-native-vector-image](https://github.com/oblador/react-native-vector-image)
 - [react-native-modal](https://github.com/react-native-modal/react-native-modal)
+- [@react-native-async-storage/async-storage](https://github.com/react-native-async-storage/async-storage)
 
 ## Run Dev
 
