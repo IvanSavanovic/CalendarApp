@@ -5,8 +5,6 @@ import {Text, useTheme} from 'react-native-paper';
 import {useSwipe} from '../hooks/useSwipe';
 import AddEventButton from './AddEventButton';
 import CalendarHeader, {onChangeMonthButtonClick} from './CalendarHeader';
-import {useAppSelector} from '../../redux/hooks';
-import {selectCalendar} from '../../redux/slices/calendarSlice';
 
 export const months = [
   'January',
@@ -80,7 +78,6 @@ const MyCalendar = ({
 }: MyCalendarProps) => {
   const theme = useTheme();
   const [today] = useState<Date>(new Date());
-  const calendar = useAppSelector(selectCalendar);
   const onSwipeLeft = () => {
     //Next month
     onChangeMonthButtonClick(true, activeDate, setActiveDate);
@@ -90,8 +87,6 @@ const MyCalendar = ({
     onChangeMonthButtonClick(false, activeDate, setActiveDate);
   };
   const {onTouchStart, onTouchEnd} = useSwipe(onSwipeLeft, onSwipeRight, 6);
-
-  console.log(calendar);
 
   const textColorForCalendarDates = (item: number, colIndex: number) => {
     /** Highlight today in calendar */
