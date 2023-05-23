@@ -5,6 +5,8 @@ import {useTheme, TextInput, Button, Text} from 'react-native-paper';
 import VectorImage from 'react-native-vector-image';
 
 import MyCalendar, {CalendarEvent} from '../calendar/MyCalendar';
+import {useAppDispatch} from '../../redux/hooks';
+import {setCalendar} from '../../redux/slices/calendarSlice';
 
 //type FormError = Omit<CalendarEvent, 'id'>;
 
@@ -40,6 +42,7 @@ const EventModal = ({
   setSelectedEvent,
 }: EventModalProps) => {
   const theme = useTheme();
+  const dispatch = useAppDispatch();
   const [eventName, setEventName] = useState<string>('');
   const [location, setLocation] = useState<string>('');
   const [eventDescription, setEventDescription] = useState<string>('');
@@ -182,6 +185,7 @@ const EventModal = ({
         eventDescription: eventDescription ? eventDescription : '',
       };
       setCalendarEvent(tmp);
+      dispatch(setCalendar({event: tmp}));
       closeMainModal();
     } else {
       setCalendarEvent([
@@ -195,6 +199,21 @@ const EventModal = ({
           eventDescription: eventDescription ? eventDescription : '',
         },
       ]);
+      dispatch(
+        setCalendar({
+          event: [
+            ...calendarEvent,
+            {
+              id: Math.random() + eventName,
+              eventName: eventName ? eventName : '',
+              location: location ? location : '',
+              eventStartDate: startEvent ? startEvent : '',
+              eventEndDate: endEvent ? endEvent : '',
+              eventDescription: eventDescription ? eventDescription : '',
+            },
+          ],
+        }),
+      );
       closeMainModal();
     }
   };
