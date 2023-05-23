@@ -1,7 +1,8 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Surface, useTheme, Text} from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import MyCalendar, {CalendarEvent} from '../calendar/MyCalendar';
 import EventModal from '../modal/Event';
@@ -22,6 +23,38 @@ const Home = () => {
     'yellow',
     'orange',
   ];
+  const CALENDAR_EVENT_STORAGE_KEY = 'CALENDAR_EVENT_STORAGE_KEY';
+
+  const getCalendarEventData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem(CALENDAR_EVENT_STORAGE_KEY);
+      if (jsonValue !== null) {
+        const res: CalendarEvent[] = JSON.parse(jsonValue);
+        return res;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    getCalendarEventData().then(res => res && setCalendarEvent(res));
+  }, []);
+
+  const storeCalendarEvent = async (value: CalendarEvent[]) => {
+    try {
+      const jsonValue = JSON.stringify(value);
+      await AsyncStorage.setItem(CALENDAR_EVENT_STORAGE_KEY, jsonValue);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    if (calendarEvent && calendarEvent.length > 0) {
+      storeCalendarEvent(calendarEvent);
+    }
+  }, [calendarEvent]);
 
   const renderEventDescription = () => {
     if (calendarEvent && calendarEvent.length > 0) {
@@ -53,9 +86,13 @@ const Home = () => {
                   setEditEvent(true);
                   setSelectedEvent(val);
                 }}>
-                <Text variant="titleLarge" style={styles.eventDescriptionLabel}>
-                  {val.eventName}
-                </Text>
+                <View>
+                  <Text
+                    variant="titleLarge"
+                    style={styles.eventDescriptionLabel}>
+                    {val.eventName}
+                  </Text>
+                </View>
                 <View
                   style={[
                     styles.divider,

@@ -1,10 +1,11 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
 import Modal from 'react-native-modal';
 import {useTheme, TextInput, Button, Text} from 'react-native-paper';
 import VectorImage from 'react-native-vector-image';
 
 import MyCalendar, {CalendarEvent} from '../calendar/MyCalendar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 //type FormError = Omit<CalendarEvent, 'id'>;
 
@@ -55,6 +56,8 @@ const EventModal = ({
   const [endEventChange, setEndEventChange] = useState<boolean>(false);
   const [activeDateEnd, setActiveDateEnd] = useState<Date>(new Date());
   const [selcetedDateEnd, setSelectedDateEnd] = useState<Date>(new Date());
+
+  const CALENDAR_EVENT_STORAGE_KEY = 'CALENDAR_EVENT_STORAGE_KEY';
 
   useEffect(() => {
     if (open === false) {
@@ -199,6 +202,16 @@ const EventModal = ({
     }
   };
 
+  const removeValueFromAsyncStorage = async () => {
+    try {
+      await AsyncStorage.removeItem(CALENDAR_EVENT_STORAGE_KEY);
+      return true;
+    } catch (e) {
+      console.error(e);
+    }
+    console.log('Removed value from storage.');
+  };
+
   const renderIcon = () => {
     return (
       <VectorImage source={require('../../assets/icons/calendar-plus.svg')} />
@@ -281,6 +294,22 @@ const EventModal = ({
     );
   };
 
+  const renderDelete = () => {
+    if (editEvent) {
+      return (
+        <TouchableOpacity
+          onPress={() => {
+            removeValueFromAsyncStorage().then(
+              res => res && setCalendarEvent([]),
+            );
+            closeMainModal();
+          }}>
+          <Text style={{color: theme.colors.error}}>Delete calendar event</Text>
+        </TouchableOpacity>
+      );
+    }
+  };
+
   return (
     <View>
       <Modal
@@ -337,6 +366,7 @@ const EventModal = ({
                 onChangeText={setEventDescription}
                 value={eventDescription}
               />
+              {renderDelete()}
               <View style={styles.buttonView}>
                 <Button
                   style={styles.buttons}
