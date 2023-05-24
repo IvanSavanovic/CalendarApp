@@ -6,6 +6,7 @@ import VectorImage from 'react-native-vector-image';
 
 import MyCalendar, {CalendarEvent} from '../calendar/MyCalendar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Timepicker, {TimePicker} from '../timepicker/Timepicker';
 
 //type FormError = Omit<CalendarEvent, 'id'>;
 
@@ -56,6 +57,12 @@ const EventModal = ({
   const [endEventChange, setEndEventChange] = useState<boolean>(false);
   const [activeDateEnd, setActiveDateEnd] = useState<Date>(new Date());
   const [selcetedDateEnd, setSelectedDateEnd] = useState<Date>(new Date());
+  //TIMEPICKERS
+  const [openTimePickerStart, setOpenTimePickerStart] =
+    useState<boolean>(false);
+  const [startTime, setStartTime] = useState<TimePicker>();
+  const [openTimePickerEnd, setOpenTimePickerEnd] = useState<boolean>(false);
+  const [endTime, setEndTime] = useState<TimePicker>();
 
   const CALENDAR_EVENT_STORAGE_KEY = 'CALENDAR_EVENT_STORAGE_KEY';
 
@@ -304,11 +311,34 @@ const EventModal = ({
             );
             closeMainModal();
           }}>
-          <Text style={{color: theme.colors.error}}>Delete calendar event</Text>
+          <Text style={{color: theme.colors.error}}>Delete event</Text>
         </TouchableOpacity>
       );
     }
   };
+
+  /*   const renderTimeView = () => {
+    return (
+      <View style={styles.renderTimeMain}>
+        <View style={styles.renderTimeView}>
+          <Text style={styles.renderTimeText}>Start time: </Text>
+          <TouchableOpacity>
+            <VectorImage
+              source={require('../../assets/icons/clock-plus-outline.svg')}
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.renderTimeView}>
+          <Text style={styles.renderTimeText}>End time: </Text>
+          <TouchableOpacity>
+            <VectorImage
+              source={require('../../assets/icons/clock-plus-outline.svg')}
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }; */
 
   return (
     <View>
@@ -385,6 +415,18 @@ const EventModal = ({
           </ScrollView>
         </View>
       </Modal>
+      <Timepicker
+        openTimePicker={openTimePickerStart}
+        setOpenTimePicker={setOpenTimePickerStart}
+        value={startTime}
+        setValue={setStartTime}
+      />
+      <Timepicker
+        openTimePicker={openTimePickerEnd}
+        setOpenTimePicker={setOpenTimePickerEnd}
+        value={endTime}
+        setValue={setEndTime}
+      />
       {renderCalendarModal()}
     </View>
   );
@@ -420,5 +462,17 @@ const styles = StyleSheet.create({
   calModalHeaderText: {
     fontSize: 22,
     fontWeight: '600',
+  },
+  renderTimeMain: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 30,
+  },
+  renderTimeView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  renderTimeText: {
+    fontSize: 16,
   },
 });
