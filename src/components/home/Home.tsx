@@ -4,8 +4,27 @@ import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Surface, useTheme, Text} from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import MyCalendar, {CalendarEvent} from '../calendar/MyCalendar';
+import MyCalendar from '../calendar/MyCalendar';
 import EventModal from '../modal/Event';
+import {TimePicker} from '../timepicker/Timepicker';
+
+export interface CalendarEvent {
+  id: string;
+  /** Name of event */
+  eventName: string;
+  /** Loacation of event */
+  location: string;
+  /** Start date of event */
+  eventStartDate: string;
+  /** End date of event */
+  eventEndDate: string;
+  /** Event description */
+  eventDescription: string;
+  /** Start time */
+  startTime: TimePicker | undefined;
+  /** End time */
+  endTime: TimePicker | undefined;
+}
 
 const Home = () => {
   const theme = useTheme();
@@ -57,6 +76,12 @@ const Home = () => {
   }, [calendarEvent]);
 
   const renderEventDescription = () => {
+    const displayTime = (item: TimePicker | undefined) => {
+      if (item && item.h && item.min) {
+        return ' at ' + item.h + ':' + item.min + 'h';
+      }
+    };
+
     if (calendarEvent && calendarEvent.length > 0) {
       return calendarEvent.map((val, index) => {
         const tmpStart = val.eventStartDate.split('.');
@@ -110,10 +135,12 @@ const Home = () => {
                 <Text variant="bodyMedium">
                   <Text style={styles.eventDescriptionLabel}>Start: </Text>
                   {val.eventStartDate}
+                  {displayTime(val.startTime)}
                 </Text>
                 <Text variant="bodyMedium">
                   <Text style={styles.eventDescriptionLabel}>End: </Text>
                   {val.eventEndDate}
+                  {displayTime(val.endTime)}
                 </Text>
                 {val.eventDescription && (
                   <Text variant="bodyMedium">

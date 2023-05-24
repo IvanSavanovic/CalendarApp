@@ -37,6 +37,32 @@ const Timepicker = ({
     setOpenTimePicker(false);
   };
 
+  const setHours = (item: string) => {
+    const hour = Number(item);
+    if (hour >= 24) {
+      setH('00');
+    }
+    if (hour < 0) {
+      setH('0');
+    }
+    if (hour >= 0 && hour <= 24) {
+      setH(item);
+    }
+  };
+
+  const setMinutes = (item: string) => {
+    const minutes = Number(item);
+    if (minutes >= 60) {
+      setMin('59');
+    }
+    if (minutes < 0) {
+      setMin('0');
+    }
+    if (minutes >= 0 && minutes <= 59) {
+      setMin(item);
+    }
+  };
+
   const addZero = (item: string) => {
     const time = Number(item);
     const returnedTime = time < 10 ? `0${time}` : `${time}`;
@@ -55,17 +81,17 @@ const Timepicker = ({
               placeholder="00"
               keyboardType="numeric"
               value={h}
-              onChangeText={setH}
+              onChangeText={setHours}
               inputMode="numeric"
               maxLength={2}
-              onEndEditing={() => setH(addZero(min))}
+              onEndEditing={() => setH(addZero(h))}
             />
             <Text style={styles.text}>:</Text>
             <TextInput
               placeholder="00"
               keyboardType="numeric"
               value={min}
-              onChangeText={setMin}
+              onChangeText={setMinutes}
               inputMode="numeric"
               maxLength={2}
               onEndEditing={() => setMin(addZero(min))}

@@ -4,9 +4,10 @@ import Modal from 'react-native-modal';
 import {useTheme, TextInput, Button, Text} from 'react-native-paper';
 import VectorImage from 'react-native-vector-image';
 
-import MyCalendar, {CalendarEvent} from '../calendar/MyCalendar';
+import MyCalendar from '../calendar/MyCalendar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Timepicker, {TimePicker} from '../timepicker/Timepicker';
+import {CalendarEvent} from '../home/Home';
 
 //type FormError = Omit<CalendarEvent, 'id'>;
 
@@ -79,6 +80,10 @@ const EventModal = ({
       setActiveDateEnd(new Date());
       setSelectedDateEnd(new Date());
       setEndEventChange(false);
+      setOpenTimePickerStart(false);
+      setStartTime(undefined);
+      setOpenTimePickerEnd(false);
+      setEndTime(undefined);
     }
   }, [open]);
 
@@ -170,6 +175,8 @@ const EventModal = ({
       setStartEvent(selectedEvent.eventStartDate);
       setEndEvent(selectedEvent.eventEndDate);
       setEventDescription(selectedEvent.eventDescription);
+      setStartTime(selectedEvent.startTime);
+      setEndTime(selectedEvent.endTime);
     }
   }, [editEvent, selectedEvent]);
 
@@ -190,6 +197,8 @@ const EventModal = ({
         eventStartDate: startEvent ? startEvent : '',
         eventEndDate: endEvent ? endEvent : '',
         eventDescription: eventDescription ? eventDescription : '',
+        startTime: startTime,
+        endTime: endTime,
       };
       setCalendarEvent(tmp);
       closeMainModal();
@@ -203,6 +212,8 @@ const EventModal = ({
           eventStartDate: startEvent ? startEvent : '',
           eventEndDate: endEvent ? endEvent : '',
           eventDescription: eventDescription ? eventDescription : '',
+          startTime: startTime,
+          endTime: endTime,
         },
       ]);
       closeMainModal();
@@ -317,28 +328,56 @@ const EventModal = ({
     }
   };
 
-  /*   const renderTimeView = () => {
+  const renderTimeView = () => {
+    const displayTime = (item: TimePicker | undefined) => {
+      if (item && item.h && item.min) {
+        return <Text>{item.h + ':' + item.min} </Text>;
+      } else {
+        return <Text>00:00 </Text>;
+      }
+    };
+
     return (
-      <View style={styles.renderTimeMain}>
-        <View style={styles.renderTimeView}>
-          <Text style={styles.renderTimeText}>Start time: </Text>
-          <TouchableOpacity>
-            <VectorImage
-              source={require('../../assets/icons/clock-plus-outline.svg')}
-            />
-          </TouchableOpacity>
+      <View>
+        <View style={styles.renderTimeMain}>
+          <View style={styles.renderTimeView}>
+            <Text style={styles.renderTimeText}>Start: </Text>
+            <TouchableOpacity onPress={() => setOpenTimePickerStart(true)}>
+              <View style={styles.renderTimeView}>
+                {displayTime(startTime)}
+                <VectorImage
+                  source={require('../../assets/icons/clock-plus-outline.svg')}
+                />
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.renderTimeView}>
+            <Text style={styles.renderTimeText}>End time: </Text>
+            <TouchableOpacity onPress={() => setOpenTimePickerEnd(true)}>
+              <View style={styles.renderTimeView}>
+                {displayTime(endTime)}
+                <VectorImage
+                  source={require('../../assets/icons/clock-plus-outline.svg')}
+                />
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={styles.renderTimeView}>
-          <Text style={styles.renderTimeText}>End time: </Text>
-          <TouchableOpacity>
-            <VectorImage
-              source={require('../../assets/icons/clock-plus-outline.svg')}
-            />
-          </TouchableOpacity>
-        </View>
+        <Timepicker
+          openTimePicker={openTimePickerStart}
+          setOpenTimePicker={setOpenTimePickerStart}
+          value={startTime}
+          setValue={setStartTime}
+        />
+        <Timepicker
+          openTimePicker={openTimePickerEnd}
+          setOpenTimePicker={setOpenTimePickerEnd}
+          value={endTime}
+          setValue={setEndTime}
+        />
       </View>
     );
-  }; */
+  };
 
   return (
     <View>
@@ -390,6 +429,7 @@ const EventModal = ({
                   />
                 }
               />
+              {renderTimeView()}
               <TextInput
                 style={styles.textInput}
                 label={'Event description'}
@@ -415,18 +455,6 @@ const EventModal = ({
           </ScrollView>
         </View>
       </Modal>
-      <Timepicker
-        openTimePicker={openTimePickerStart}
-        setOpenTimePicker={setOpenTimePickerStart}
-        value={startTime}
-        setValue={setStartTime}
-      />
-      <Timepicker
-        openTimePicker={openTimePickerEnd}
-        setOpenTimePicker={setOpenTimePickerEnd}
-        value={endTime}
-        setValue={setEndTime}
-      />
       {renderCalendarModal()}
     </View>
   );
@@ -466,7 +494,7 @@ const styles = StyleSheet.create({
   renderTimeMain: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 30,
+    gap: 20,
   },
   renderTimeView: {
     flexDirection: 'row',

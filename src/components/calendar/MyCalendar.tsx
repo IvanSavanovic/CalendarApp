@@ -5,6 +5,7 @@ import {Text, useTheme} from 'react-native-paper';
 import {useSwipe} from '../hooks/useSwipe';
 import AddEventButton from './AddEventButton';
 import CalendarHeader, {onChangeMonthButtonClick} from './CalendarHeader';
+import {CalendarEvent} from '../home/Home';
 
 export const months = [
   'January',
@@ -26,21 +27,6 @@ export const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export const nDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 export type Matrix = string[] | number[];
-
-export interface CalendarEvent {
-  id: string;
-  /** Name of event */
-  eventName: string;
-  /** Loacation of event */
-  location: string;
-  /** Start date of event */
-  eventStartDate: string;
-  /** End date of event */
-  eventEndDate: string;
-  /** Event description */
-  eventDescription: string;
-}
-
 interface MyCalendarProps {
   /** Active date should be just new Date() -
    *  it is used for generating date matrix changing months/years
