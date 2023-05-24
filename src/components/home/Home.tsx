@@ -79,6 +79,8 @@ const Home = () => {
     const displayTime = (item: TimePicker | undefined) => {
       if (item && item.h && item.min) {
         return ' at ' + item.h + ':' + item.min + 'h';
+      } else {
+        return ' at ' + '00' + ':' + '00' + 'h';
       }
     };
 

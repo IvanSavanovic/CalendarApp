@@ -84,6 +84,7 @@ const Timepicker = ({
               onChangeText={setHours}
               inputMode="numeric"
               maxLength={2}
+              defaultValue="00"
               onEndEditing={() => setH(addZero(h))}
             />
             <Text style={styles.text}>:</Text>
@@ -94,6 +95,7 @@ const Timepicker = ({
               onChangeText={setMinutes}
               inputMode="numeric"
               maxLength={2}
+              defaultValue="00"
               onEndEditing={() => setMin(addZero(min))}
             />
           </View>
