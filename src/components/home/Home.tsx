@@ -1,8 +1,9 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Surface, useTheme, Text} from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import notifee from '@notifee/react-native';
 
 import MyCalendar from '../calendar/MyCalendar';
 import EventModal from '../modal/Event';
@@ -44,6 +45,83 @@ const Home = () => {
   ];
   const CALENDAR_EVENT_STORAGE_KEY = 'CALENDAR_EVENT_STORAGE_KEY';
 
+  const onDisplayNotification = async (item: CalendarEvent) => {
+    // Request permissions (required for iOS)
+    await notifee.requestPermission();
+
+    // Create a channel (required for Android)
+    const channelId = await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+    });
+
+    // Display a notification
+    await notifee.displayNotification({
+      title: item.eventName,
+      body:
+        item.eventDescription +
+        `${item.location ? ' at ' + item.location : ''}`,
+      android: {
+        channelId,
+        //smallIcon: 'name-of-a-small-icon', // optional, defaults to 'ic_launcher'.
+        // pressAction is needed if you want the notification to open the app when pressed
+        pressAction: {
+          id: 'default',
+        },
+      },
+    });
+  };
+
+  const checkTime = useCallback(() => {
+    const now = new Date();
+    if (calendarEvent && calendarEvent.length > 0) {
+      calendarEvent.forEach(item => {
+        const tmpStart = item.eventStartDate.split('.');
+        const startDate = new Date(
+          Number(tmpStart[2]),
+          Number(tmpStart[1]) - 1,
+          Number(tmpStart[0]) + 1,
+        );
+        const tmpEnd = item.eventEndDate.split('.');
+        const endDate = new Date(
+          Number(tmpEnd[2]),
+          Number(tmpEnd[1]) - 1,
+          Number(tmpEnd[0]) + 1,
+        );
+        const tmpNow = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+        );
+        if (tmpNow >= startDate || tmpNow <= endDate) {
+          if (tmpNow.getDate() === startDate.getDate()) {
+            if (
+              item.startTime !== undefined &&
+              now.getHours() >= Number(item.startTime.h) &&
+              now.getMinutes() >= Number(item.startTime.min)
+            ) {
+              onDisplayNotification(item);
+            }
+          } else if (tmpNow.getDate() === endDate.getDate()) {
+            if (
+              item.endTime !== undefined &&
+              now.getHours() <= Number(item.endTime.h) &&
+              now.getMinutes() <= Number(item.endTime.min)
+            ) {
+              onDisplayNotification(item);
+            }
+          } else {
+            onDisplayNotification(item);
+          }
+        }
+      });
+    }
+  }, [calendarEvent]);
+
+  useEffect(() => {
+    checkTime();
+  }, [checkTime]);
+
   const getCalendarEventData = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem(CALENDAR_EVENT_STORAGE_KEY);
@@ -73,7 +151,7 @@ const Home = () => {
     if (calendarEvent && calendarEvent.length > 0) {
       storeCalendarEvent(calendarEvent);
     }
-  }, [calendarEvent]);
+  }, [calendarEvent, editEvent]);
 
   const renderEventDescription = () => {
     const displayTime = (item: TimePicker | undefined) => {
@@ -90,16 +168,15 @@ const Home = () => {
         const startDate = new Date(
           Number(tmpStart[2]),
           Number(tmpStart[1]) - 1,
-          Number(tmpStart[0]),
+          Number(tmpStart[0]) + 1,
         );
 
         const tmpEnd = val.eventEndDate.split('.');
         const endDate = new Date(
           Number(tmpEnd[2]),
           Number(tmpEnd[1]) - 1,
-          Number(tmpEnd[0]),
+          Number(tmpEnd[0]) + 1,
         );
-
         if (
           startDate <= selcetedDate &&
           selcetedDate <= endDate &&
