@@ -3,7 +3,12 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Surface, useTheme, Text} from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import notifee from '@notifee/react-native';
+import notifee, {
+  EventType,
+  RepeatFrequency,
+  TimestampTrigger,
+  TriggerType,
+} from '@notifee/react-native';
 
 import MyCalendar from '../calendar/MyCalendar';
 import EventModal from '../modal/Event';
@@ -45,6 +50,38 @@ const Home = () => {
   ];
   const CALENDAR_EVENT_STORAGE_KEY = 'CALENDAR_EVENT_STORAGE_KEY';
 
+  const getCalendarEventData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem(CALENDAR_EVENT_STORAGE_KEY);
+      if (jsonValue !== null) {
+        const res: CalendarEvent[] = JSON.parse(jsonValue);
+        return res;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  notifee.onBackgroundEvent(async ({type, detail}) => {
+    const {notification, pressAction} = detail;
+
+    // Check if the user pressed the "Mark as read" action
+    if (pressAction) {
+      if (
+        type === EventType.ACTION_PRESS &&
+        pressAction.id === 'mark-as-read'
+      ) {
+        // Update
+        await getCalendarEventData();
+
+        // Remove the notification
+        if (notification && notification.id) {
+          await notifee.cancelNotification(notification.id);
+        }
+      }
+    }
+  });
+
   const onDisplayNotification = async (item: CalendarEvent) => {
     // Request permissions (required for iOS)
     await notifee.requestPermission();
@@ -72,6 +109,57 @@ const Home = () => {
     });
   };
 
+  const triggerMaker = (calEvent: CalendarEvent) => {
+    const tmpStart = calEvent.eventStartDate.split('.');
+    const startDate = new Date(
+      Number(tmpStart[2]),
+      Number(tmpStart[1]) - 1,
+      Number(tmpStart[0]),
+    );
+    if (calEvent.startTime && calEvent.startTime.h && calEvent.startTime.min) {
+      startDate.setHours(Number(calEvent.startTime.h));
+      startDate.setMinutes(Number(calEvent.startTime.min));
+    }
+
+    const now = new Date();
+    if (now > startDate) {
+      return;
+    }
+
+    const trigger: TimestampTrigger = {
+      type: TriggerType.TIMESTAMP,
+      timestamp: startDate.getTime(),
+      repeatFrequency: RepeatFrequency.WEEKLY,
+    };
+
+    return trigger;
+  };
+
+  const triggerNotification = async (
+    item: CalendarEvent,
+    trigger: TimestampTrigger,
+  ) => {
+    // Create a channel (required for Android)
+    const channelId = await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+    });
+
+    await notifee.createTriggerNotification(
+      {
+        id: item.id,
+        title: item.eventName + 'triggerNotification',
+        body:
+          item.eventDescription +
+          `${item.location ? ' at ' + item.location : ''}`,
+        android: {
+          channelId: channelId,
+        },
+      },
+      trigger,
+    );
+  };
+
   const checkTime = useCallback(() => {
     const now = new Date();
     if (calendarEvent && calendarEvent.length > 0) {
@@ -93,6 +181,8 @@ const Home = () => {
           now.getMonth(),
           now.getDate(),
         );
+
+        triggerMaker(item);
         if (tmpNow >= startDate || tmpNow <= endDate) {
           if (tmpNow.getDate() === startDate.getDate()) {
             if (
@@ -112,6 +202,10 @@ const Home = () => {
             }
           } else {
             onDisplayNotification(item);
+            const tmp = triggerMaker(item);
+            if (tmp) {
+              triggerNotification(item, tmp);
+            }
           }
         }
       });
@@ -122,22 +216,6 @@ const Home = () => {
     checkTime();
   }, [checkTime]);
 
-  const getCalendarEventData = async () => {
-    try {
-      const jsonValue = await AsyncStorage.getItem(CALENDAR_EVENT_STORAGE_KEY);
-      if (jsonValue !== null) {
-        const res: CalendarEvent[] = JSON.parse(jsonValue);
-        return res;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  useEffect(() => {
-    getCalendarEventData().then(res => res && setCalendarEvent(res));
-  }, []);
-
   const storeCalendarEvent = async (value: CalendarEvent[]) => {
     try {
       const jsonValue = JSON.stringify(value);
@@ -146,6 +224,10 @@ const Home = () => {
       console.error(e);
     }
   };
+
+  useEffect(() => {
+    getCalendarEventData().then(res => res && setCalendarEvent(res));
+  }, []);
 
   useEffect(() => {
     if (calendarEvent && calendarEvent.length > 0) {
@@ -168,15 +250,16 @@ const Home = () => {
         const startDate = new Date(
           Number(tmpStart[2]),
           Number(tmpStart[1]) - 1,
-          Number(tmpStart[0]) + 1,
+          Number(tmpStart[0]),
         );
 
         const tmpEnd = val.eventEndDate.split('.');
         const endDate = new Date(
           Number(tmpEnd[2]),
           Number(tmpEnd[1]) - 1,
-          Number(tmpEnd[0]) + 1,
+          Number(tmpEnd[0]),
         );
+
         if (
           startDate <= selcetedDate &&
           selcetedDate <= endDate &&
