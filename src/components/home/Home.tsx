@@ -1,8 +1,14 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Surface, useTheme, Text} from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import notifee, {
+  EventType,
+  RepeatFrequency,
+  TimestampTrigger,
+  TriggerType,
+} from '@notifee/react-native';
 
 import MyCalendar from '../calendar/MyCalendar';
 import EventModal from '../modal/Event';
@@ -56,9 +62,170 @@ const Home = () => {
     }
   };
 
+  notifee.onBackgroundEvent(async ({type, detail}) => {
+    const {notification, pressAction} = detail;
+
+    // Check if the user pressed the "Mark as read" action
+    if (pressAction) {
+      if (
+        type === EventType.ACTION_PRESS &&
+        pressAction.id === 'mark-as-read'
+      ) {
+        // Update
+        await getCalendarEventData();
+
+        // Remove the notification
+        if (notification && notification.id) {
+          await notifee.cancelNotification(notification.id);
+        }
+      }
+    }
+  });
+
+  const onDisplayNotification = async (item: CalendarEvent) => {
+    // Request permissions (required for iOS)
+    await notifee.requestPermission();
+
+    // Create a channel (required for Android)
+    const channelId = await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+    });
+
+    // Display a notification
+    await notifee.displayNotification({
+      title: item.eventName,
+      body:
+        'DisplayNotification' +
+        item.eventDescription +
+        `${item.location ? ' at ' + item.location : ''}`,
+      android: {
+        channelId,
+        //smallIcon: 'name-of-a-small-icon', // optional, defaults to 'ic_launcher'.
+        // pressAction is needed if you want the notification to open the app when pressed
+        pressAction: {
+          id: 'default',
+        },
+      },
+    });
+  };
+
+  const triggerMaker = (calEvent: CalendarEvent) => {
+    const tmpStart = calEvent.eventStartDate.split('.');
+    const startDate = new Date(
+      Number(tmpStart[2]),
+      Number(tmpStart[1]) - 1,
+      Number(tmpStart[0]),
+    );
+    if (calEvent.startTime && calEvent.startTime.h && calEvent.startTime.min) {
+      startDate.setHours(Number(calEvent.startTime.h));
+      startDate.setMinutes(Number(calEvent.startTime.min));
+    }
+
+    const now = new Date();
+    if (now > startDate) {
+      return;
+    }
+
+    const trigger: TimestampTrigger = {
+      type: TriggerType.TIMESTAMP,
+      timestamp: startDate.getTime(),
+      repeatFrequency: RepeatFrequency.WEEKLY,
+    };
+
+    return trigger;
+  };
+
+  const triggerNotification = async (
+    item: CalendarEvent,
+    trigger: TimestampTrigger,
+  ) => {
+    // Create a channel (required for Android)
+    const channelId = await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+    });
+
+    await notifee.createTriggerNotification(
+      {
+        id: item.id,
+        title: item.eventName + 'triggerNotification',
+        body:
+          'TriggerNotification' +
+          item.eventDescription +
+          `${item.location ? ' at ' + item.location : ''}`,
+        android: {
+          channelId: channelId,
+        },
+      },
+      trigger,
+    );
+  };
+
+  const checkTime = useCallback(() => {
+    const now = new Date();
+    if (calendarEvent && calendarEvent.length > 0) {
+      calendarEvent.forEach(item => {
+        const tmpStart = item.eventStartDate.split('.');
+        const startDate = new Date(
+          Number(tmpStart[2]),
+          Number(tmpStart[1]) - 1,
+          Number(tmpStart[0]),
+        );
+        startDate.setHours(item.startTime ? Number(item.startTime.h) : 0);
+        startDate.setMinutes(item.startTime ? Number(item.startTime.min) : 0);
+
+        const tmpEnd = item.eventEndDate.split('.');
+        const endDate = new Date(
+          Number(tmpEnd[2]),
+          Number(tmpEnd[1]) - 1,
+          Number(tmpEnd[0]),
+        );
+        endDate.setHours(item.endTime ? Number(item.endTime.h) : 0);
+        endDate.setMinutes(item.endTime ? Number(item.endTime.min) : 0);
+
+        const tmpNow = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+        );
+        tmpNow.setHours(now.getHours());
+        tmpNow.setMinutes(now.getMinutes());
+
+        triggerMaker(item);
+        if (tmpNow >= startDate && tmpNow <= endDate) {
+          if (tmpNow.getDate() === startDate.getDate()) {
+            if (
+              item.startTime !== undefined &&
+              now.getHours() >= Number(item.startTime.h) &&
+              now.getMinutes() >= Number(item.startTime.min)
+            ) {
+              onDisplayNotification(item);
+            }
+          } else if (tmpNow.getDate() === endDate.getDate()) {
+            if (
+              item.endTime !== undefined &&
+              now.getHours() <= Number(item.endTime.h) &&
+              now.getMinutes() <= Number(item.endTime.min)
+            ) {
+              onDisplayNotification(item);
+            }
+          } else {
+            onDisplayNotification(item);
+          }
+        } else {
+          const tmp = triggerMaker(item);
+          if (tmp) {
+            triggerNotification(item, tmp);
+          }
+        }
+      });
+    }
+  }, [calendarEvent]);
+
   useEffect(() => {
-    getCalendarEventData().then(res => res && setCalendarEvent(res));
-  }, []);
+    checkTime();
+  }, [checkTime]);
 
   const storeCalendarEvent = async (value: CalendarEvent[]) => {
     try {
@@ -70,10 +237,14 @@ const Home = () => {
   };
 
   useEffect(() => {
+    getCalendarEventData().then(res => res && setCalendarEvent(res));
+  }, []);
+
+  useEffect(() => {
     if (calendarEvent && calendarEvent.length > 0) {
-      storeCalendarEvent(calendarEvent);
+      storeCalendarEvent(calendarEvent).catch(err => console.error(err));
     }
-  }, [calendarEvent]);
+  }, [calendarEvent, editEvent]);
 
   const renderEventDescription = () => {
     const displayTime = (item: TimePicker | undefined) => {

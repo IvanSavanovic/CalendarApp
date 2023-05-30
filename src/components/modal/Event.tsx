@@ -5,7 +5,6 @@ import {useTheme, TextInput, Button, Text} from 'react-native-paper';
 import VectorImage from 'react-native-vector-image';
 
 import MyCalendar from '../calendar/MyCalendar';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Timepicker, {TimePicker} from '../timepicker/Timepicker';
 import {CalendarEvent} from '../home/Home';
 
@@ -64,8 +63,6 @@ const EventModal = ({
   const [startTime, setStartTime] = useState<TimePicker>();
   const [openTimePickerEnd, setOpenTimePickerEnd] = useState<boolean>(false);
   const [endTime, setEndTime] = useState<TimePicker>();
-
-  const CALENDAR_EVENT_STORAGE_KEY = 'CALENDAR_EVENT_STORAGE_KEY';
 
   useEffect(() => {
     if (open === false) {
@@ -220,16 +217,6 @@ const EventModal = ({
     }
   };
 
-  const removeValueFromAsyncStorage = async () => {
-    try {
-      await AsyncStorage.removeItem(CALENDAR_EVENT_STORAGE_KEY);
-      return true;
-    } catch (e) {
-      console.error(e);
-    }
-    console.log('Removed value from storage.');
-  };
-
   const renderIcon = () => {
     return (
       <VectorImage source={require('../../assets/icons/calendar-plus.svg')} />
@@ -312,14 +299,27 @@ const EventModal = ({
     );
   };
 
+  const removeItemFromEvent = () => {
+    if (selectedEvent && calendarEvent && calendarEvent.length > 0) {
+      const tmpEvent: CalendarEvent[] = [];
+      calendarEvent.forEach(item => {
+        if (selectedEvent.id !== item.id) {
+          tmpEvent.push(item);
+        }
+      });
+      return tmpEvent;
+    }
+  };
+
   const renderDelete = () => {
     if (editEvent) {
       return (
         <TouchableOpacity
           onPress={() => {
-            removeValueFromAsyncStorage().then(
-              res => res && setCalendarEvent([]),
-            );
+            const tmp = removeItemFromEvent();
+            if (tmp) {
+              setCalendarEvent(tmp);
+            }
             closeMainModal();
           }}>
           <Text style={{color: theme.colors.error}}>Delete event</Text>
