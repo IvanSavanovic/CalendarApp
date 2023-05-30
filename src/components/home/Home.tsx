@@ -96,6 +96,7 @@ const Home = () => {
     await notifee.displayNotification({
       title: item.eventName,
       body:
+        'DisplayNotification' +
         item.eventDescription +
         `${item.location ? ' at ' + item.location : ''}`,
       android: {
@@ -150,6 +151,7 @@ const Home = () => {
         id: item.id,
         title: item.eventName + 'triggerNotification',
         body:
+          'TriggerNotification' +
           item.eventDescription +
           `${item.location ? ' at ' + item.location : ''}`,
         android: {
@@ -168,22 +170,30 @@ const Home = () => {
         const startDate = new Date(
           Number(tmpStart[2]),
           Number(tmpStart[1]) - 1,
-          Number(tmpStart[0]) + 1,
+          Number(tmpStart[0]),
         );
+        startDate.setHours(item.startTime ? Number(item.startTime.h) : 0);
+        startDate.setMinutes(item.startTime ? Number(item.startTime.min) : 0);
+
         const tmpEnd = item.eventEndDate.split('.');
         const endDate = new Date(
           Number(tmpEnd[2]),
           Number(tmpEnd[1]) - 1,
-          Number(tmpEnd[0]) + 1,
+          Number(tmpEnd[0]),
         );
+        endDate.setHours(item.endTime ? Number(item.endTime.h) : 0);
+        endDate.setMinutes(item.endTime ? Number(item.endTime.min) : 0);
+
         const tmpNow = new Date(
           now.getFullYear(),
           now.getMonth(),
           now.getDate(),
         );
+        tmpNow.setHours(now.getHours());
+        tmpNow.setMinutes(now.getMinutes());
 
         triggerMaker(item);
-        if (tmpNow >= startDate || tmpNow <= endDate) {
+        if (tmpNow >= startDate && tmpNow <= endDate) {
           if (tmpNow.getDate() === startDate.getDate()) {
             if (
               item.startTime !== undefined &&
@@ -202,10 +212,11 @@ const Home = () => {
             }
           } else {
             onDisplayNotification(item);
-            const tmp = triggerMaker(item);
-            if (tmp) {
-              triggerNotification(item, tmp);
-            }
+          }
+        } else {
+          const tmp = triggerMaker(item);
+          if (tmp) {
+            triggerNotification(item, tmp);
           }
         }
       });
@@ -231,7 +242,7 @@ const Home = () => {
 
   useEffect(() => {
     if (calendarEvent && calendarEvent.length > 0) {
-      storeCalendarEvent(calendarEvent);
+      storeCalendarEvent(calendarEvent).catch(err => console.error(err));
     }
   }, [calendarEvent, editEvent]);
 
@@ -252,6 +263,8 @@ const Home = () => {
           Number(tmpStart[1]) - 1,
           Number(tmpStart[0]),
         );
+        startDate.setHours(val.startTime ? Number(val.startTime.h) : 0);
+        startDate.setMinutes(val.startTime ? Number(val.startTime.min) : 0);
 
         const tmpEnd = val.eventEndDate.split('.');
         const endDate = new Date(
@@ -259,6 +272,8 @@ const Home = () => {
           Number(tmpEnd[1]) - 1,
           Number(tmpEnd[0]),
         );
+        endDate.setHours(val.endTime ? Number(val.endTime.h) : 0);
+        endDate.setMinutes(val.endTime ? Number(val.endTime.min) : 0);
 
         if (
           startDate <= selcetedDate &&
