@@ -263,8 +263,6 @@ const Home = () => {
           Number(tmpStart[1]) - 1,
           Number(tmpStart[0]),
         );
-        startDate.setHours(val.startTime ? Number(val.startTime.h) : 0);
-        startDate.setMinutes(val.startTime ? Number(val.startTime.min) : 0);
 
         const tmpEnd = val.eventEndDate.split('.');
         const endDate = new Date(
@@ -272,8 +270,6 @@ const Home = () => {
           Number(tmpEnd[1]) - 1,
           Number(tmpEnd[0]),
         );
-        endDate.setHours(val.endTime ? Number(val.endTime.h) : 0);
-        endDate.setMinutes(val.endTime ? Number(val.endTime.min) : 0);
 
         if (
           startDate <= selcetedDate &&
