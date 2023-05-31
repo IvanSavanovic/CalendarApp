@@ -47,6 +47,10 @@ const Home = () => {
     'blue',
     'yellow',
     'orange',
+    'maroon',
+    'lime',
+    'fuchsia',
+    'aqua',
   ];
   const CALENDAR_EVENT_STORAGE_KEY = 'CALENDAR_EVENT_STORAGE_KEY';
 

@@ -27,6 +27,7 @@ export const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export const nDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 export type Matrix = string[] | number[];
+
 interface MyCalendarProps {
   /** Active date should be just new Date() -
    *  it is used for generating date matrix changing months/years
