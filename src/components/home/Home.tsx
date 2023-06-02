@@ -196,7 +196,6 @@ const Home = () => {
         tmpNow.setHours(now.getHours());
         tmpNow.setMinutes(now.getMinutes());
 
-        triggerMaker(item);
         if (tmpNow >= startDate && tmpNow <= endDate) {
           if (tmpNow.getDate() === startDate.getDate()) {
             if (
