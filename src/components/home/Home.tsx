@@ -40,6 +40,7 @@ const Home = () => {
   const [calendarEvent, setCalendarEvent] = useState<CalendarEvent[]>([]);
   const [editEvent, setEditEvent] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent>();
+  const [notifeeIds, setNotifeeIds] = useState<string[]>([]);
   const colors: string[] = [
     'purple',
     'green',
@@ -76,7 +77,7 @@ const Home = () => {
         pressAction.id === 'mark-as-read'
       ) {
         // Update
-        await getCalendarEventData();
+        await getCalendarEventData().catch(err => console.error(err));
 
         // Remove the notification
         if (notification && notification.id) {
@@ -85,6 +86,23 @@ const Home = () => {
       }
     }
   });
+
+  useEffect(() => {
+    notifee
+      .getTriggerNotificationIds()
+      .then(ids => setNotifeeIds(ids))
+      .catch(err => console.error(err));
+  }, []);
+
+  useEffect(() => {
+    if (calendarEvent && calendarEvent.length > 0 && notifeeIds.length > 0) {
+      calendarEvent.forEach(event => {
+        if (!notifeeIds.some(id => id === event.id)) {
+          notifee.cancelNotification(event.id).catch(err => console.error(err));
+        }
+      });
+    }
+  }, [calendarEvent, notifeeIds]);
 
   const onDisplayNotification = async (item: CalendarEvent) => {
     // Request permissions (required for iOS)
@@ -153,7 +171,7 @@ const Home = () => {
     await notifee.createTriggerNotification(
       {
         id: item.id,
-        title: item.eventName + 'triggerNotification',
+        title: item.eventName + ' triggerNotification',
         body:
           'TriggerNotification' +
           item.eventDescription +
